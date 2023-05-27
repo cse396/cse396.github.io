@@ -368,13 +368,12 @@ class Action:
 if __name__=='__main__':
     action=Action()  
     time.sleep(2) 
-    while True:
-        #action.push_ups()
-        action.helloOne()
+    action.push_ups()
+        #action.helloOne()
         #action.hand()
         #action.coquettish() 
         #action.swim() 
-        #action.yoga() 
+    #action.yoga() 
         #action.helloTwo()
-        time.sleep(3)
+    time.sleep(3)
         

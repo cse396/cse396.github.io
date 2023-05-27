@@ -8,6 +8,7 @@ from IMU import *
 from PID import *
 import numpy as np
 from Servo import *
+from Ultrasonic import *
 from Command import COMMAND as cmd
 
 class Control:
@@ -449,10 +450,20 @@ class Control:
         for i in range(4):
             AB[:, i] = pos + rot_mat * footpoint_struc[:, i] - body_struc[:, i]
         return (AB)
-        
-if __name__=='__main__':
-    pass
 
-        
-   
+            
+def call_forward():
+    self = Control()
+    ultrasonic2 = Ultrasonic()
+    while True:
+        print(ultrasonic2.getDistance())
+        if ultrasonic2.getDistance() < 15  and ultrasonic2.getDistance() != 0:
+            break
+            
+        self.forWard()
+            
+
+#Control py        
+if __name__=='__main__':
+    call_forward()
 
