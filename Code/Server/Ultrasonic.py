@@ -42,8 +42,6 @@ if __name__ == '__main__':
     try:
         while True:
             data= ultrasonic_otonom.getDistance()   #Get the value
-            
-                
             f = open("distance.txt" , "w")    
             f.write(str(data))
             f.close()

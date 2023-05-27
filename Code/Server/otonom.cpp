@@ -11,6 +11,9 @@ using namespace std;
 
 void* func1(void*);
 void* func2(void*);
+void* func3(void*);
+void* func4(void*);
+
 void callforward();
 
 int main(int argc, char* argv[])
@@ -25,7 +28,7 @@ int main(int argc, char* argv[])
 
 	pthread_join(thread1 , NULL);
 	pthread_join(thread2 , NULL);
-
+	
 	//sağa/sola dön
 	//10 adım
 	//sağa döndüyse dola,sola döndüyse sağa
@@ -40,27 +43,10 @@ int main(int argc, char* argv[])
 
 void* func1(void* arg)
 {		
-	int distance = 10;
-	//char temp = "\n";
-	//wait(NULL);
-	int pid = fork();
-	if (pid == 0){
-		system("sudo python Control.py");
-		}
-	else{
-		wait(NULL);
-	while(distance  >= 15){
+	pthread_t thread1 , thread2;
 
-			ifstream inFile;
-			inFile.open("distance.txt");
-			inFile >> distance;
-			sleep(0.5);
-			inFile.close();
-		
-	}			
-		
-	}
-
+	pthread_create(&thread1, NULL , func3 , NULL);
+	pthread_create(&thread2, NULL , func4 , NULL);
 		
 	return NULL;
 }
@@ -84,6 +70,30 @@ void* func2(void* arg)
 	return NULL;
 }
 
+void* func3(void* arg){
+	system("sudo python Control.py");
+	return NULL;
+}
+
+void* func4(void* arg){
+	
+	int distance = 20;
+	while(distance  >= 15 || distance == 0){
+		ifstream inFile;
+		inFile.open("distance.txt");
+		inFile >> distance;
+		sleep(0.5);
+		inFile.close();
+	}
+	int pid2;
+	ifstream inFile2;
+	inFile2.open("pid.txt");
+	inFile2 >> pid2;
+	inFile2.close();
+	kill(pid2 , SIGKILL);
+	return NULL;
+}
+/*
 void callforward(){
 		
 	Py_Initialize();
@@ -129,3 +139,4 @@ void callforward(){
 
     Py_Finalize();
 }
+*/

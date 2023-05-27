@@ -4,6 +4,7 @@ import math
 import smbus
 import copy
 import threading
+import os
 from IMU import *
 from PID import *
 import numpy as np
@@ -453,17 +454,18 @@ class Control:
 
             
 def call_forward():
-    self = Control()
+    #self = Control()
+    data= os.getpid()
+    f = open("pid.txt" , "w")    
+    f.write(str(data))
+    f.close()
     ultrasonic2 = Ultrasonic()
     while True:
         print(ultrasonic2.getDistance())
-        if ultrasonic2.getDistance() < 15  and ultrasonic2.getDistance() != 0:
-            break
-            
-        self.forWard()
+        #self.forWard()
             
 
 #Control py        
 if __name__=='__main__':
     call_forward()
-
+    
