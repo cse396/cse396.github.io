@@ -1,56 +1,43 @@
-# Measure distance using an ultrasonic module 
-# ----------------------- 
-# Import required Python libraries 
-# ----------------------- 
 import RPi.GPIO as GPIO
 import time
-
-#GPIO Mode (BOARD / BCM)
 GPIO.setmode(GPIO.BCM)
 
-#set GPIO Pins
-GPIO_TRIGGER = 16
-GPIO_ECHO = 20
+TRIG = 6
+ECHO = 5
 
-#set GPIO direction (IN / OUT)
-GPIO.setup(GPIO_TRIGGER, GPIO.OUT)
-GPIO.setup(GPIO_ECHO, GPIO.IN)
+print("distance masurement")
 
-def distance():
-# set Trigger to HIGH
-GPIO.output(GPIO_TRIGGER, True)
+GPIO.setup(TRIG, GPIO.OUT)
+GPIO.setup(ECHO, GPIO.IN)
 
-# set Trigger after 0.01ms to LOW
-time.sleep(0.00001)
-GPIO.output(GPIO_TRIGGER, False)
-
-StartTime = time.time()
-StopTime = time.time()
-
-# save StartTime
-while GPIO.input(GPIO_ECHO) == 0:
-StartTime = time.time()
-
-# save time of arrival
-while GPIO.input(GPIO_ECHO) == 1:
-StopTime = time.time()
-
-# time difference between start and arrival
-TimeElapsed = StopTime - StartTime
-# multiply with the sonic speed (34300 cm/s)
-# and divide by 2, because there and back
-distance = (TimeElapsed * 34300) / 2
-
-return distance
-
-if __name__ == '__main__':
-try:
 while True:
-dist = distance()
-print ("Measured Distance = %.1f cm" % dist)
-time.sleep(1)
 
-# Reset by pressing CTRL + C
-except KeyboardInterrupt:
-print("Measurement stopped by User")
-GPIO.cleanup()
+    GPIO.output(TRIG, False)
+    print("Olculuyor...")
+    time.sleep(2)
+
+    GPIO.output(TRIG, True)
+    time.sleep(0.00001)
+    GPIO.output(TRIG, False)
+
+    while GPIO.input(ECHO)==0:
+        pulse_start = time.time()
+
+    while GPIO.input(ECHO)==1:
+        
+        pulse_end = time.time()
+
+    pulse_duration = pulse_end - pulse_start
+
+    distance = pulse_duration * 17150
+    distance = round(distance, 2)
+
+    if distance > 2 and distance < 400:
+        print("Mesafe:",distance - 0.5,"cm")
+    else:
+        print("Menzil asildi")
+
+
+	
+
+

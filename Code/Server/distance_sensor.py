@@ -4,8 +4,8 @@ import time
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 
-TRIG = 23
-ECHO = 24
+TRIG = 6
+ECHO = 5
 
 print("HC-SR04 mesafe sensoru")
 
@@ -26,14 +26,15 @@ while True:
         pulse_start = time.time()
 
     while GPIO.input(ECHO)==1:
+        
         pulse_end = time.time()
 
-        pulse_duration = pulse_end - pulse_start
+    pulse_duration = pulse_end - pulse_start
 
-        distance = pulse_duration * 17150
-        distance = round(distance, 2)
+    distance = pulse_duration * 17150
+    distance = round(distance, 2)
 
-        if distance > 2 and distance < 400:
-            print("Mesafe:",distance - 0.5,"cm")
-        else:
-            print("Menzil asildi")
+    if distance > 2 and distance < 400:
+        print("Mesafe:",distance - 0.5,"cm")
+    else:
+        print("Menzil asildi")
