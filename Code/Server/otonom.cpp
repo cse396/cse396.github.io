@@ -5,30 +5,38 @@
 #include <fstream>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <sys/stat.h>
 #include <pthread.h>
+#include <string>
+#include <fcntl.h>
 
 using namespace std;
 
+/*
+ * for i in range(4):
+            p[i][0]=(p[i][0]-self.point[i][0])/50
+            p[i][1]=(p[i][1]-self.point[i][1])/50
+            p[i][2]=(p[i][2]-self.point[i][2])/50
+        for j in range(50):
+            for i in range(4):
+                self.point[i][0]+=p[i][0]
+                self.point[i][1]+=p[i][1]
+                self.point[i][2]+=p[i][2]
+ * */
+
 void* func1(void*);
 void* func2(void*);
-void* func3(void*);
-void* func4(void*);
-
-void callforward();
 
 int main(int argc, char* argv[])
-{
-	
-	//int yön 1
-
+{	
 	pthread_t thread1 , thread2;
-
+	int check = mkfifo(write_path,0666);
 	pthread_create(&thread1, NULL , func1 , NULL);
 	pthread_create(&thread2, NULL , func2 , NULL);
 
 	pthread_join(thread1 , NULL);
 	pthread_join(thread2 , NULL);
-	
+
 	//sağa/sola dön
 	//10 adım
 	//sağa döndüyse dola,sola döndüyse sağa
@@ -43,14 +51,11 @@ int main(int argc, char* argv[])
 
 void* func1(void* arg)
 {		
-	pthread_t thread1 , thread2;
-
-	pthread_create(&thread1, NULL , func3 , NULL);
-	pthread_create(&thread2, NULL , func4 , NULL);
+	system("sudo python Control.py");
+	return NULL;
 		
 	return NULL;
 }
-
 void* func2(void* arg)
 {
 	const char* filename = "Ultrasonic.py";
@@ -69,74 +74,3 @@ void* func2(void* arg)
 	Py_Finalize();
 	return NULL;
 }
-
-void* func3(void* arg){
-	system("sudo python Control.py");
-	return NULL;
-}
-
-void* func4(void* arg){
-	
-	int distance = 20;
-	while(distance  >= 15 || distance == 0){
-		ifstream inFile;
-		inFile.open("distance.txt");
-		inFile >> distance;
-		sleep(0.5);
-		inFile.close();
-	}
-	int pid2;
-	ifstream inFile2;
-	inFile2.open("pid.txt");
-	inFile2 >> pid2;
-	inFile2.close();
-	kill(pid2 , SIGKILL);
-	return NULL;
-}
-/*
-void callforward(){
-		
-	Py_Initialize();
-	PyObject* pModule = nullptr;
-	PyObject* pFunc = nullptr;
-
-	
-    // Import the 'test' module
-    pModule = PyImport_ImportModule("Control");
-    if (pModule == nullptr) {
-        PyErr_Print();
-        return;
-    }
-
-    // Get a reference to the 'test_Ultrasonic_otonom' function
-    pFunc = PyObject_GetAttrString(pModule, "call_forward");
-    if (pFunc == nullptr || !PyCallable_Check(pFunc)) {
-		if(PyErr_Occurred() ) {
-			PyErr_Print();
-		}
-        
-        return;
-    }
-
-    // Create arguments for the function call
-    PyObject* pArgs = PyTuple_New(0);
-
-
-    // Call the function with arguments
-    PyObject* pResult = PyObject_CallObject(pFunc, pArgs);
-    
-    if (pResult == nullptr) {
-		PyErr_Print();
-        return;
-    }
-
-    // Cleanup
-    Py_DECREF(pResult);
-    Py_DECREF(pArgs);
-    Py_DECREF(pFunc);
-    Py_DECREF(pModule);
-
-
-    Py_Finalize();
-}
-*/

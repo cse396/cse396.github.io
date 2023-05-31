@@ -11,6 +11,7 @@ import numpy as np
 from Servo import *
 from Ultrasonic import *
 from Command import COMMAND as cmd
+read_path =  "/tmp/pythonreadX_fifo"
 
 class Control:
     def __init__(self):
@@ -24,7 +25,8 @@ class Control:
         self.move_count = 0
         self.move_timeout = 0
         self.order = ['','','','','']
-        self.point = [[0, 99, 10], [0, 99, 10], [0, 99, -10], [0, 99, -10]]
+        #self.point = [[0, 99, 10], [0, 99, 10], [0, 99, -10], [0, 99, -10]]
+        self.point = [[10, 99, 11], [10, 99, 7], [9, 99,-11], [-3, 99, -11]]
         self.calibration_point = self.readFromTxt('point')
         self.angle = [[90,0,0],[90,0,0],[90,0,0],[90,0,0]]
         self.calibration_angle=[[0,0,0],[0,0,0],[0,0,0],[0,0,0]]
@@ -335,16 +337,9 @@ class Control:
             #time.sleep(0.01)
     def stop(self):
         p=[[10, self.height, 10], [10, self.height, 10], [10, self.height, -10], [10, self.height, -10]]
-        for i in range(4):
-            p[i][0]=(p[i][0]-self.point[i][0])/50
-            p[i][1]=(p[i][1]-self.point[i][1])/50
-            p[i][2]=(p[i][2]-self.point[i][2])/50
-        for j in range(50):
-            for i in range(4):
-                self.point[i][0]+=p[i][0]
-                self.point[i][1]+=p[i][1]
-                self.point[i][2]+=p[i][2]
-            self.run()
+        self.point = [[10, 99, 11], [10, 99, 7], [9, 99,-11], [5, 99, -11]]
+        
+        self.run()
     def setpLeft(self):
         for i in range(90,451,self.speed):
             Z1=10*math.cos(i*math.pi/180)
@@ -453,19 +448,51 @@ class Control:
         return (AB)
 
             
-def call_forward():
-    #self = Control()
-    data= os.getpid()
-    f = open("pid.txt" , "w")    
-    f.write(str(data))
-    f.close()
+def call_forward(self):
     ultrasonic2 = Ultrasonic()
     while True:
+        if(ultrasonic2.getDistance() < 15 and ultrasonic2.getDistance() != 0):
+            break
         print(ultrasonic2.getDistance())
-        #self.forWard()
-            
+        self.forWard()
+        
+def rightTT(self):
+    for i in range(17):
+        self.setpRight()
+        
+def leftTTT(self):
+    for i in range(17):
+        self.setpLeft()
+    
+def tenStep(self):
+    for i in range(10):
+        self.forWard()
+
 
 #Control py        
 if __name__=='__main__':
-    call_forward()
+    self = Control()
     
+    self.relax(False)
+    quit() 
+    while(True) : 
+        call_forward(self)
+        print("sol-sag")
+        choice = int(input())
+        
+        if choice == 1:
+            rightTT(self)
+            tenStep(self)
+            while(int(input()) == 1):
+                tenStep(self)
+            leftTTT(self)
+            
+        elif choice == 0:
+            leftTTT(self)
+            tenStep(self)
+            while(int(input()) == 1):
+                tenStep(self)
+            rightTT(self)
+        
+        
+        

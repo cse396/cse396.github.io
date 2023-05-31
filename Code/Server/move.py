@@ -44,7 +44,7 @@ if __name__=='__main__':
         pass
 
     fd = os.open(read_path, os.O_RDONLY | os.O_NONBLOCK)
-    
+    print(fd)
     data = os.read(fd, 20)
     data = data.decode('utf-8')
     if len(data) == 0:
