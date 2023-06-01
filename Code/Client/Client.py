@@ -103,18 +103,20 @@ class Client:
             #print (command)
     def receiving_video(self,ip):
         stream_bytes = b' '
-        vid = cv2.VideoCapture(0)
         try:
-            print('test')
+            self.client_socket.connect((ip, 8001))
+            self.connection = self.client_socket.makefile('rb')
         except:
             #print ("command port connect failed")
             pass
         while True:
             try:
-                ret, jpg = vid.read()
-                if True:
+                stream_bytes= self.connection.read(4)
+                leng=struct.unpack('<L', stream_bytes[:4])
+                jpg=self.connection.read(leng[0])
+                if self.is_valid_image_4_bytes(jpg):
                     if self.video_flag:
-                        self.image = jpg
+                        self.image = cv2.imdecode(np.frombuffer(jpg, dtype=np.uint8), cv2.IMREAD_COLOR)
                         if self.text_detect:
                             text,processed_img=text_detect.image_process(self.image)
                             self.detected_text = text
