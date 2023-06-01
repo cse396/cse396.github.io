@@ -10,6 +10,8 @@ import numpy as np
 from Thread import *
 from PIL import Image
 from Command import COMMAND as cmd
+import text_detect
+from ui_client import Ui_client
 
 class Client:
     def __init__(self):
@@ -20,6 +22,9 @@ class Client:
         self.ball_flag=False
         self.face_flag=False
         self.face_id = False
+        self.text_detect=False
+        self.image_process=False
+        self.detected_text=[]
         self.image=''
     def turn_on_client(self,ip):
         self.client_socket1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -98,20 +103,23 @@ class Client:
             #print (command)
     def receiving_video(self,ip):
         stream_bytes = b' '
+        vid = cv2.VideoCapture(0)
         try:
-            self.client_socket.connect((ip, 8001))
-            self.connection = self.client_socket.makefile('rb')
+            print('test')
         except:
             #print ("command port connect failed")
             pass
         while True:
             try:
-                stream_bytes= self.connection.read(4)
-                leng=struct.unpack('<L', stream_bytes[:4])
-                jpg=self.connection.read(leng[0])
-                if self.is_valid_image_4_bytes(jpg):
+                ret, jpg = vid.read()
+                if True:
                     if self.video_flag:
-                        self.image = cv2.imdecode(np.frombuffer(jpg, dtype=np.uint8), cv2.IMREAD_COLOR)
+                        self.image = jpg
+                        if self.text_detect:
+                            text,processed_img=text_detect.image_process(self.image)
+                            self.detected_text = text
+                            if self.image_process:
+                                self.image=processed_img
                         if self.ball_flag and self.face_id==False:
                            self.Looking_for_the_ball()
                         elif self.face_flag and self.face_id==False:
