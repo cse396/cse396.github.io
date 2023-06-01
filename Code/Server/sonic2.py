@@ -1,21 +1,18 @@
 import RPi.GPIO as GPIO
 import time
-
 GPIO.setmode(GPIO.BCM)
-GPIO.setwarnings(False)
 
-TRIG = 6
-ECHO = 5
+TRIG = 6 #6
+ECHO = 5 #5
 
-print("HC-SR04 mesafe sensoru")
 
-GPIO.setup(TRIG,GPIO.OUT)
-GPIO.setup(ECHO,GPIO.IN)
+GPIO.setup(TRIG, GPIO.OUT)
+GPIO.setup(ECHO, GPIO.IN)
 
 while True:
 
     GPIO.output(TRIG, False)
-    print("Olculuyor...")
+
     time.sleep(2)
 
     GPIO.output(TRIG, True)
@@ -35,6 +32,11 @@ while True:
     distance = round(distance, 2)
 
     if distance > 2 and distance < 400:
-        print("Mesafe:",distance - 0.5,"cm")
-    else:
-        print("Menzil asildi")
+        f = open("distanceSonic2.txt" , "w")    
+        f.write(str(distance))
+        f.close()
+
+
+	
+
+

@@ -22,7 +22,7 @@ except KeyboardInterrupt:
 # Import libraries
 import RPi.GPIO as GPIO
 import time
-
+import math
 # Set GPIO numbering mode
 GPIO.setmode(GPIO.BOARD)
 
@@ -30,38 +30,39 @@ GPIO.setmode(GPIO.BOARD)
 GPIO.setup(33,GPIO.OUT)
 servo1 = GPIO.PWM(33,50) # Note 11 is pin, 50 = 50Hz pulse
 
-#start PWM running, but with value of 0 (pulse off)
-servo1.start(0)
-print ("Waiting for 2 seconds")
-time.sleep(2)
 
-#Let's move the servo!
-print ("Rotating 180 degrees in 10 steps")
 
 # Define variable duty
 duty = 2
 degree = 0
 # Loop for duty values from 2 to 12 (0 to 180 degrees)
-while duty < 12:
+while True:
+  while duty < 12:
     degree = (duty - 2) * 18
-    print("degree: ", degree)
+    degree = math.floor(degree)
+    f = open("degree.txt" , "w")    
+    f.write(str(degree))
+    f.close()
     servo1.ChangeDutyCycle(duty)
     time.sleep(0.1)
-    duty = duty + 0.5
-    
-degree = (duty - 2) * 18
-print("degree: ", degree)
-# Wait a couple of seconds
-time.sleep(2)
+    duty = duty + 1/18
+    time.sleep(5)
+      
+  degree = (duty - 2) * 18
 
-#turn back to 0 degrees
-while duty > 0:
+  # Wait a couple of seconds
+
+  #turn back to 0 degrees
+  while duty > 0:
     degree = (duty - 2) * 18
-    print("degree: ", degree)
+    f = open("degree.txt" , "w")    
+    f.write(str(degree))
+    f.close()
     servo1.ChangeDutyCycle(duty)
     time.sleep(0.1)
-    duty = duty - 0.5
-
+    duty = duty - 1/18
+    time.sleep(5)
+  duty = 2
 #Clean things up at the end
 servo1.stop()
 GPIO.cleanup()
