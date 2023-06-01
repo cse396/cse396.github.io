@@ -337,7 +337,16 @@ class Control:
             #time.sleep(0.01)
     def stop(self):
         p=[[10, self.height, 10], [10, self.height, 10], [10, self.height, -10], [10, self.height, -10]]
-        self.point = [[10, 99, 11], [10, 99, 7], [9, 99,-11], [5, 99, -11]]
+        for i in range(4):
+            p[i][0]=(p[i][0]-self.point[i][0])/50
+            p[i][1]=(p[i][1]-self.point[i][1])/50
+            p[i][2]=(p[i][2]-self.point[i][2])/50
+        for j in range(50):
+            for i in range(4):
+                self.point[i][0]+=p[i][0]
+                self.point[i][1]+=p[i][1]
+                self.point[i][2]+=p[i][2]
+        #self.point = [[10, 99, 11], [10, 99, 7], [9, 99,-11], [5, 99, -11]]
         
         self.run()
     def setpLeft(self):
@@ -457,24 +466,23 @@ def call_forward(self):
         self.forWard()
         
 def rightTT(self):
-    for i in range(17):
-        self.setpRight()
+    for i in range(15):
+        self.turnRight()
         
 def leftTTT(self):
-    for i in range(17):
-        self.setpLeft()
+    for i in range(20):
+        self.turnLeft()
     
 def tenStep(self):
-    for i in range(10):
+    for i in range(15):
         self.forWard()
 
 
 #Control py        
 if __name__=='__main__':
     self = Control()
-    
     self.relax(False)
-    quit() 
+    time.sleep(2)
     while(True) : 
         call_forward(self)
         print("sol-sag")
