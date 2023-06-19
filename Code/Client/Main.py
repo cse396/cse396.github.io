@@ -166,19 +166,19 @@ class MyWindow(QMainWindow,Ui_client):
                 print("A")
                 self.left()
                 self.Key_A=True
-            elif event.key() == Qt.Key_D:                  
+            elif event.key() == Qt.Key_D:
                 print("D")
                 self.right()
                 self.Key_D=True
-            elif event.key() == Qt.Key_Q:                  
+            elif event.key() == Qt.Key_Q:
                 print("Q")
                 self.step_left()
                 self.Key_Q=True
-            elif event.key() == Qt.Key_E:                  
+            elif event.key() == Qt.Key_E:
                 print("E")
                 self.step_right()
-                self.Key_E=True 
-            elif event.key() == Qt.Key_Space:  
+                self.Key_E=True
+            elif event.key() == Qt.Key_Space:
                 print("Space")
                 self.buzzer()
                 self.Key_Space=True
@@ -223,24 +223,18 @@ class MyWindow(QMainWindow,Ui_client):
 
     def paintEvent(self,e):
         try:
-            qp=QPainter()
+            qp = QPainter()
             qp.begin(self)
-            pen=QPen(Qt.white,2,Qt.SolidLine)
-            qp.setPen(pen)
-            qp.drawRect(485,35,200,200)
-            pen=QPen(QColor(0,138,255),2,Qt.SolidLine)
-            qp.setPen(pen)
-            qp.drawLine(self.drawpoint[0],35,self.drawpoint[0],235)
-            qp.drawLine(485,self.drawpoint[1],685,self.drawpoint[1])
-            self.label_point.move(self.drawpoint[0] + 10, self.drawpoint[1] + 10)
-            pitch = round((self.drawpoint[1] - 135) / 100.0 * 20)
-            yaw = round((self.drawpoint[0] - 585) / 100.0 * 20)
-            self.label_point.setText(str((yaw, pitch)))
-            qp.end()
-            if pitch !=self.slider_pitch.value():
-                self.slider_pitch.setValue(pitch)
-            if yaw !=self.slider_yaw.value():
-                self.slider_yaw.setValue(yaw)
+
+            # Load the PNG image
+            image = QPixmap("Picture/map.png")
+
+            # Draw the image
+            qp.drawPixmap(QRect(485, 90, 200, 200), image)
+
+
+        
+
         except Exception as e:
             print(e)
 
@@ -369,7 +363,7 @@ class MyWindow(QMainWindow,Ui_client):
             self.client.turn_on_client(self.IP)
             self.video=threading.Thread(target=self.client.receiving_video,args=(self.IP,))
             self.instruction=threading.Thread(target=self.receive_instruction,args=(self.IP,))
-            self.video.start() 
+            self.video.start()
             self.instruction.start()
             self.Button_Connect.setText('Disconnect')
             self.timer_power.start(1000)
@@ -541,7 +535,7 @@ class MyWindow(QMainWindow,Ui_client):
         except Exception as e:
             print(e)
 
-    #ATTITUDE        
+    #ATTITUDE
     def attitude(self,target1,target2):
         try:
             r=str(self.slider_roll.value())
@@ -836,9 +830,9 @@ class calibrationWindow(QMainWindow,Ui_calibration):
         self.point[3][2] = self.four_z.text()
 
         self.Save_to_txt(self.point,'point')
-        reply = QMessageBox.information(self,                        
-                                        "Message",  
-                                        "Saved successfully",  
+        reply = QMessageBox.information(self,
+                                        "Message",
+                                        "Saved successfully",
                                         QMessageBox.Yes)
         #print(command)
     def Read_from_txt(self,filename):
