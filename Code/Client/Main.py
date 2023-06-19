@@ -8,7 +8,14 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from Client import *
 from Calibration import *
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import ast
+import time
+
 class MyWindow(QMainWindow,Ui_client):
+    global df 
     def __init__(self):
         super(MyWindow,self).__init__()
         self.setupUi(self)
@@ -221,20 +228,80 @@ class MyWindow(QMainWindow,Ui_client):
                 self.buzzer()
                 self.Key_Space=False
 
+    def create_data(self):
+        data = {
+            'distance': {},
+            'radius': {}
+        }
+
+        for i in range(361):
+            data['distance'][int(i)] = 0.0
+            data['radius'][int(i)] = i
+
+        with open("distance.txt", "w") as file:
+            file.write(str(data))
+
+
+
     def paintEvent(self,e):
+
+        #plt.ion()
+        self.create_data()
+
+        degree = 0
+        with open("degree.txt", "r") as file:
+            degree = file.read()
+
+        if  degree == "" or not degree.isdigit() or int(degree) > 180 or int(degree) < 0 :
+            print(f"degree is not valid: {degree}")
+            time.sleep(0.5)
+
+        
+        sonic1 = 0
+        with open ("distanceSonic1.txt", "r") as file:
+            sonic1 = file.read()
+
+        sonic2 = 0 
+        with open ("distanceSonic2.txt", "r") as file:
+            sonic2 = file.read()
+        
+        sonic2 = float(sonic2)
+        
+        with open ("distance.txt", "r") as file:
+            data = file.read().replace('\n', '')
+
+        
+        data = ast.literal_eval(data)
+
+        df = pd.DataFrame.from_dict(data) 
+
+
+        df.loc[int(degree), "distance"] = float(sonic1)
+        df.loc[int(degree) + 180, "distance"] = float(sonic2)
+
+
+        x = df["distance"] * np.cos(np.deg2rad(df["radius"]))
+        y = df["distance"] * np.sin(np.deg2rad(df["radius"]))
+
+        plotData = pd.DataFrame(columns=["x", "y"]) 
+        plotData["x"] = x
+        plotData["y"] = y
+
+        with open("distance.txt", "w") as file:
+            file.write(str(df.to_dict()))
+        fig, ax = plt.subplots()
+        ax.clear() 
+        ax.scatter(plotData["x"], plotData["y"])
+        plt.savefig("graph.png")
         try:
             qp = QPainter()
             qp.begin(self)
 
             # Load the PNG image
-            image = QPixmap("Picture/map.png")
+            image = QPixmap("graph.png")
 
             # Draw the image
             qp.drawPixmap(QRect(485, 90, 200, 200), image)
-
-
-        
-
         except Exception as e:
             print(e)
 
