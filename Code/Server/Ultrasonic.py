@@ -35,7 +35,20 @@ class Ultrasonic:
         return int(distance_cm[1])
         
 # Main program logic follows:
-if __name__ == '__main__':
-    pass
-        
 
+if __name__ == '__main__':
+    ultrasonic_otonom = Ultrasonic()
+
+    try:
+        while True:
+            data= ultrasonic_otonom.getDistance()   #Get the value
+            f = open("distance.txt" , "w")    
+            f.write(str(data))
+            f.close()
+            print(data)
+            if(data < 15 and data != 0):
+                break
+            time.sleep(1)
+            
+    except KeyboardInterrupt:
+        print ("\nEnd of program")
