@@ -4,25 +4,32 @@ import math
 import smbus
 import copy
 import threading
+import os
 from IMU import *
 from PID import *
 import numpy as np
 from Servo import *
+from Ultrasonic import *
+from Ultrasonic_left import *
+from Ultrasonic_right import *
 from Command import COMMAND as cmd
+read_path =  "/tmp/pythonreadX_fifo"
 
 class Control:
     def __init__(self):
         self.imu=IMU()
         self.servo=Servo()
         self.pid = Incremental_PID(0.5,0.0,0.0025)
-        self.speed = 8
+        self.speed = 10 
         self.height = 99
         self.timeout = 0
         self.move_flag = 0
         self.move_count = 0
         self.move_timeout = 0
         self.order = ['','','','','']
-        self.point = [[0, 99, 10], [0, 99, 10], [0, 99, -10], [0, 99, -10]]
+        #self.point = [[0, 99, 10], [0, 99, 10], [0, 99, -10], [0, 99, -10]] programla gelen
+        #self.point = [[10, 99, 11], [10, 99, 7], [9, 99,-11], [-3, 99, -11]] 2. eklediğimz
+        self.point = [[13, 99, 11], [12, 99, 12], [11, 99,-7], [1, 99, -10]]
         self.calibration_point = self.readFromTxt('point')
         self.angle = [[90,0,0],[90,0,0],[90,0,0],[90,0,0]]
         self.calibration_angle=[[0,0,0],[0,0,0],[0,0,0],[0,0,0]]
@@ -31,7 +38,7 @@ class Control:
         self.attitude_flag=False
         self.Thread_conditiona=threading.Thread(target=self.condition)
         self.calibration()
-        self.relax(True)
+        #self.relax(True)
     def readFromTxt(self,filename):
         file1 = open(filename + ".txt", "r")
         list_row = file1.readlines()
@@ -270,11 +277,15 @@ class Control:
                 self.point[i][1]=pos[2,2*i]
                 self.point[i][2]=pos[1,2*i]
         else: #'backWard' 'forWard' 'setpRight' 'setpLeft'
+            self.point[0][0]=X1+15
+            self.point[0][1]=Y1+2
+            self.point[1][0]=X2+10
+            self.point[1][1]=Y2
+            self.point[2][0]=X1+10
+            self.point[2][1]=Y1
+            self.point[3][0]=X2+10
+            self.point[3][1]=Y2-2
             for i in range(2):
-                self.point[i*2][0]=X1+10
-                self.point[i*2][1]=Y1
-                self.point[i*2+1][0]=X2+10
-                self.point[i*2+1][1]=Y2
                 self.point[i*2][2]=Z1+((-1)**i)*10
                 self.point[i*2+1][2]=Z2+((-1)**i)*10
         self.run()
@@ -333,6 +344,7 @@ class Control:
             #time.sleep(0.01)
     def stop(self):
         p=[[10, self.height, 10], [10, self.height, 10], [10, self.height, -10], [10, self.height, -10]]
+        '''
         for i in range(4):
             p[i][0]=(p[i][0]-self.point[i][0])/50
             p[i][1]=(p[i][1]-self.point[i][1])/50
@@ -342,7 +354,11 @@ class Control:
                 self.point[i][0]+=p[i][0]
                 self.point[i][1]+=p[i][1]
                 self.point[i][2]+=p[i][2]
-            self.run()
+        '''
+        self.point = [[13, 99, 11], [12, 99, 12], [21, 80,-7], [1, 98, -10]]
+        #self.point = [[0, 99, 10], [0, 99, 10], [0, 99, -10], [0, 99, -10]]
+
+        self.run()
     def setpLeft(self):
         for i in range(90,451,self.speed):
             Z1=10*math.cos(i*math.pi/180)
@@ -386,6 +402,7 @@ class Control:
         else:
             self.stop()
             self.move_timeout=time.time()
+        time.sleep(1)
     def upAndDown(self,var):
         self.height=var+99
         self.changeCoordinates('height',0,self.height,0,0,self.height,0)
@@ -449,10 +466,89 @@ class Control:
         for i in range(4):
             AB[:, i] = pos + rot_mat * footpoint_struc[:, i] - body_struc[:, i]
         return (AB)
+
+            
+def call_forward(self):
+    x = 0
+    print("forward")
+    self.relax(False)
+    
+    ultrasonic2 = Ultrasonic()
+    while True:
+        #if(ultrasonic2.getDistance() < 15 and ultrasonic2.getDistance() != 0):
+            #break
+        print(ultrasonic2.getDistance())
+        self.forWard()
+        x+= 1
+    self.relax(False)
         
+def rightTT(self):
+    self.relax(False)
+    for i in range(17):
+        self.turnRight()
+    self.relax(False)
+        
+def leftTTT(self):
+    self.relax(False)
+    for i in range(17):
+        self.turnLeft()
+    self.relax(False)
+    
+def tenStep(self):
+    self.relax(False)
+    for i in range(15):
+        self.forWard()
+    self.relax(False)
+
+
+#Control py        
 if __name__=='__main__':
-    pass
-
+    self = Control()
+    self.relax(False)
+    #quit()
+    """
+    ultrasonic_left = Ultrasonic_left()
+    ultrasonic_right = Ultrasonic_right()
+    """
+    time.sleep(2)
+    while(True) : 
+        call_forward(self)
+        print("sol-sag")
+        """
+        print("right distance: ", ultrasonic_right.getDistance())
+        print("left distance: ", ultrasonic_left.getDistance())
+        if(ultrasonic_right.getDistance() == 0):
+            print("right distance2: ", ultrasonic_right.getDistance())
+            print("turn right")
+            choice = 1
+        elif(ultrasonic_left.getDistance() == 0):
+            print("left distance2: ", ultrasonic_left.getDistance())
+            print("turn left")
+            choice = 0
+        elif(ultrasonic_left.getDistance() < ultrasonic_right.getDistance()):
+            print("right distance2: ", ultrasonic_right.getDistance())
+            print("turn right")
+            choice = 1
+        elif(ultrasonic_left.getDistance() >= ultrasonic_right.getDistance()):
+            print("left distance2: ", ultrasonic_left.getDistance())
+            print("turn left")
+            choice = 0
         
-   
-
+        choice = int(input())
+        
+        if choice == 1:
+            rightTT(self)
+            tenStep(self)
+            while(int(input()) == 1):
+                tenStep(self)
+            leftTTT(self)
+            
+        elif choice == 0:
+            leftTTT(self)
+            tenStep(self)
+            while(int(input()) == 1):
+                tenStep(self)
+            rightTT(self)
+        """
+        
+        
