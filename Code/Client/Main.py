@@ -39,6 +39,7 @@ class MyWindow(QMainWindow,Ui_client):
         self.Button_Connect.clicked.connect(self.connect)
         self.Button_Video.clicked.connect(self.video)
         self.Button_TextDetect.clicked.connect(self.text_detect)
+        self.Button_ObjectDetect.clicked.connect(self.object_detect)
         self.Button_ImageProcess.clicked.connect(self.toggle_processed_image)
         self.Button_Ball_And_Face.clicked.connect(self.chase_ball_and_find_face)
         self.Button_IMU.clicked.connect(self.imu)
@@ -294,6 +295,9 @@ class MyWindow(QMainWindow,Ui_client):
 
     def text_detect(self):
         self.client.text_detect = not self.client.text_detect
+
+    def object_detect(self):
+        self.client.object_detect = not self.client.object_detect
 
     def toggle_processed_image(self):
         self.client.image_process = not self.client.image_process

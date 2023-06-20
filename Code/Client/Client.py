@@ -23,6 +23,7 @@ class Client:
         self.face_flag=False
         self.face_id = False
         self.text_detect=False
+        self.object_detect=False
         self.image_process=False
         self.detected_text=[]
         self.image=''
@@ -103,7 +104,7 @@ class Client:
             #print (command)
     def receiving_video(self,ip):
         stream_bytes = b' '
-        vid = cv2.VideoCapture(0)
+        vid = cv2.VideoCapture(1)
         try:
             print('test')
         except:
@@ -117,6 +118,11 @@ class Client:
                         self.image = jpg
                         if self.text_detect:
                             text,processed_img=text_detect.image_process(self.image)
+                            self.detected_text = text
+                            if self.image_process:
+                                self.image=processed_img
+                        if self.object_detect:
+                            text,processed_img=text_detect.object_detect(self.image)
                             self.detected_text = text
                             if self.image_process:
                                 self.image=processed_img
