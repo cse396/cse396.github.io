@@ -9,7 +9,7 @@ ECHO = 5 #5
 GPIO.setup(TRIG, GPIO.OUT)
 GPIO.setup(ECHO, GPIO.IN)
 try:
-	print("sonic2")
+
 	while True:
 
 		GPIO.output(TRIG, False)
@@ -33,8 +33,7 @@ try:
 		distance = round(distance, 2)
 
 		if distance > 2 and distance < 400:
-			f = open("distanceSonic2.txt" , "w")
-			print("SONIC2: " + f"{distance}")      
+			f = open("distanceSonic2.txt" , "w")     
 			f.write(str(distance))
 			f.close()
 except KeyboardInterrupt: 

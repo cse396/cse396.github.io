@@ -1,10 +1,10 @@
 import time
 import RPi.GPIO as GPIO
-class Ultrasonic:
+class Ultrasonic_left:
     def __init__(self):
         GPIO.setwarnings(False)
-        self.trigger_pin = 27
-        self.echo_pin = 22
+        self.trigger_pin = 6
+        self.echo_pin = 5
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.trigger_pin,GPIO.OUT)
         GPIO.setup(self.echo_pin,GPIO.IN)
@@ -36,8 +36,9 @@ class Ultrasonic:
         
 # Main program logic follows:
 
+"""
 if __name__ == '__main__':
-    ultrasonic_otonom = Ultrasonic()
+    ultrasonic_left = Ultrasonic_left()
 
     try:
         while True:
@@ -45,10 +46,11 @@ if __name__ == '__main__':
             f = open("distance.txt" , "w")    
             f.write(str(data))
             f.close()
-            print(data)
             if(data < 15 and data != 0):
                 break
             time.sleep(1)
             
     except KeyboardInterrupt:
         print ("\nEnd of program")
+
+"""

@@ -62,12 +62,19 @@ class Server:
         self.server_socket1.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEPORT,1)
         self.server_socket1.bind((HOST, 5001))
         self.server_socket1.listen(1)
+        
+        #Port 9001 is used for sending distance,distance2,distance3,degree datas
+        self.server_socket2 = socket.socket()
+        self.server_socket2.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEPORT,1)
+        self.server_socket2.bind((HOST, 9001))
+        self.server_socket2.listen(1)
         print('Server address: '+HOST)
         
     def turn_off_server(self):
         try:
             self.connection.close()
             self.connection1.close()
+            self.connection2.close()
         except :
             print ('\n'+"No client connection")
     
@@ -76,8 +83,16 @@ class Server:
         self.turn_on_server()
         self.video=threading.Thread(target=self.transmission_video)
         self.instruction=threading.Thread(target=self.receive_instruction)
+        self.mapping_data = threading.Thread(target = self.send_mapping_data)
         self.video.start()
         self.instruction.start()
+        self.send_mapping_data.start()
+        
+    def send_mapping_data(self):
+        try:
+            connec
+        except Exception as e:
+            print(e)
     def send_data(self,connect,data):
         try:
             connect.send(data.encode('utf-8'))
