@@ -19,6 +19,7 @@ from Control import *
 from ADS7830 import *
 from Ultrasonic import *
 from Command import COMMAND as cmd
+from mapping import get_mapping_data
 
 class StreamingOutput(io.BufferedIOBase):
     def __init__(self):
@@ -218,6 +219,9 @@ class Server:
                     else:
                         command=cmd.CMD_WORKING_TIME+'#'+str(round(self.control.move_count))+'#'+str(0)+"\n"
                     self.send_data(self.connection1,command)
+                elif cmd.CMD_MAP in data:
+                    command=cmd.CMD_MAP+'#'+str(get_mapping_data())+"\n"
+                    self.send_data(self.connection1, command)
                 else:
                     self.control.order=data
                     self.control.timeout=time.time()
