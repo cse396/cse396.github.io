@@ -47,6 +47,7 @@ class MyWindow(QMainWindow,Ui_client):
         self.Button_Sonic.clicked.connect(self.sonic)
         self.Button_Relax.clicked.connect(self.relax)
         self.Button_Face_ID.clicked.connect(self.showFaceWindow)
+        self.Button_Mapping.clicked.connect(self.getMappingData)
         
         self.Button_ForWard.pressed.connect(self.forward)
         self.Button_ForWard.released.connect(self.stop)
@@ -339,6 +340,9 @@ class MyWindow(QMainWindow,Ui_client):
                         self.Button_Relax.setText('Relax')
                     else:
                         self.Button_Relax.setText('"Too tired..."')
+                elif data[0]==cmd.CMD_MAP:
+                    command = eval(data[1])
+                    print(command)
 
     def refresh_image(self):
         try:
@@ -505,6 +509,9 @@ class MyWindow(QMainWindow,Ui_client):
         command=cmd.CMD_SONIC+'\n'
         self.client.send_data(command)
         #print (command)
+    def getMappingData(self):
+        command=cmd.CMD_MAP+'\n'
+        self.client.send_data(command)
     #HEIGHT
     def height(self):
         try:

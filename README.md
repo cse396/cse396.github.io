@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ## Freenove Robot Dog Kit for Raspberry Pi
 
 > A Robot Dog Kit for Raspberry Pi.
@@ -73,3 +74,6 @@ Our services include:
 Our code and circuit are open source. You can obtain the details and the latest information through visiting the following web site:
 
 http://www.freenove.com
+=======
+
+>>>>>>> d907473198ec15b3c5259e59266c3204f99ebbf1

@@ -18,6 +18,7 @@ try:
 
 except KeyboardInterrupt:
         print("Stop")
+<<<<<<< HEAD
         
         
 # Import libraries
@@ -54,11 +55,33 @@ servo = Servo(13, min_pulse_width=0.5/1000, max_pulse_width=2.5/1000, pin_factor
 
 # Define variable duty
 """
+=======
+        """
+        
+# Import libraries
+import RPi.GPIO as GPIO
+import time
+import math
+# Set GPIO numbering mode
+GPIO.setwarnings(False)
+GPIO.setmode(GPIO.BOARD)
+
+# Set pin 11 as an output, and set servo1 as pin 11 as PWM
+GPIO.setup(33,GPIO.OUT)
+servo1 = GPIO.PWM(33,50) # Note 11 is pin, 50 = 50Hz pulse
+
+servo1.start(0)
+
+# Define variable duty
+>>>>>>> d907473198ec15b3c5259e59266c3204f99ebbf1
 duty = 2
 degree = 0
 # Loop for duty values from 2 to 12 (0 to 180 degrees)
 print("servo")
+<<<<<<< HEAD
 
+=======
+>>>>>>> d907473198ec15b3c5259e59266c3204f99ebbf1
 while True:
     while duty < 12:
       degree = (duty - 2) * 18
@@ -87,6 +110,7 @@ while True:
       duty = duty - 2/18
       time.sleep(0.1)
     duty = 2
+<<<<<<< HEAD
 """
 
 def get_sonic_mapping(deg):
@@ -136,3 +160,6 @@ def get_sonic_mapping(deg):
     GPIO.cleanup()
   
   return distrad
+=======
+
+>>>>>>> d907473198ec15b3c5259e59266c3204f99ebbf1

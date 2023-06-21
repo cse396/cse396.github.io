@@ -19,7 +19,11 @@ from Control import *
 from ADS7830 import *
 from Ultrasonic import *
 from Command import COMMAND as cmd
+<<<<<<< HEAD
 import lidar_servo
+=======
+from mapping import get_mapping_data
+>>>>>>> d907473198ec15b3c5259e59266c3204f99ebbf1
 
 class StreamingOutput(io.BufferedIOBase):
     def __init__(self):
@@ -84,10 +88,17 @@ class Server:
         self.turn_on_server()
         self.video=threading.Thread(target=self.transmission_video)
         self.instruction=threading.Thread(target=self.receive_instruction)
+<<<<<<< HEAD
         #self.mapping_data = threading.Thread(target = self.send_mapping_data)
         self.video.start()
         self.instruction.start()
         #self.send_mapping_data.start()
+=======
+        self.mapping_data = threading.Thread(target = self.send_mapping_data)
+        self.video.start()
+        self.instruction.start()
+        self.send_mapping_data.start()
+>>>>>>> d907473198ec15b3c5259e59266c3204f99ebbf1
         
     def send_mapping_data(self):
         try:
@@ -229,9 +240,14 @@ class Server:
                         command=cmd.CMD_WORKING_TIME+'#'+str(round(self.control.move_count))+'#'+str(0)+"\n"
                     self.send_data(self.connection1,command)
                 elif cmd.CMD_MAP in data:
+<<<<<<< HEAD
                     th = threading.Thread(target=self.lidar_servo_controller, args=['ehe'])
                     th.start()
                     th.join()
+=======
+                    command=cmd.CMD_MAP+'#'+str(get_mapping_data())+"\n"
+                    self.send_data(self.connection1, command)
+>>>>>>> d907473198ec15b3c5259e59266c3204f99ebbf1
                 else:
                     self.control.order=data
                     self.control.timeout=time.time()

@@ -35,7 +35,10 @@ try:
 		if distance > 2 and distance < 400:
 			f = open("distanceSonic2.txt" , "w")     
 			f.write(str(distance))
+<<<<<<< HEAD
 			print(distance)
+=======
+>>>>>>> d907473198ec15b3c5259e59266c3204f99ebbf1
 			f.close()
 except KeyboardInterrupt: 
 	print("ctrl-c geldi")

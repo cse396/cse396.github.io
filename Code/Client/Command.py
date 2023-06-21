@@ -18,5 +18,6 @@ class COMMAND:
     CMD_POWER = "CMD_POWER"
     CMD_ATTITUDE = "CMD_ATTITUDE"
     CMD_RELAX = "CMD_RELAX"
+    CMD_MAP = "CMD_MAP"
     def __init__(self):
         pass
