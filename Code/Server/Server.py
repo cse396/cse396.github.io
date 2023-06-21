@@ -19,6 +19,7 @@ from Control import *
 from ADS7830 import *
 from Ultrasonic import *
 from Command import COMMAND as cmd
+import lidar_servo
 
 class StreamingOutput(io.BufferedIOBase):
     def __init__(self):
@@ -62,12 +63,19 @@ class Server:
         self.server_socket1.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEPORT,1)
         self.server_socket1.bind((HOST, 5001))
         self.server_socket1.listen(1)
+        
+        #Port 9001 is used for sending distance,distance2,distance3,degree datas
+        self.server_socket2 = socket.socket()
+        self.server_socket2.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEPORT,1)
+        self.server_socket2.bind((HOST, 9001))
+        self.server_socket2.listen(1)
         print('Server address: '+HOST)
         
     def turn_off_server(self):
         try:
             self.connection.close()
             self.connection1.close()
+            self.connection2.close()
         except :
             print ('\n'+"No client connection")
     
@@ -76,8 +84,16 @@ class Server:
         self.turn_on_server()
         self.video=threading.Thread(target=self.transmission_video)
         self.instruction=threading.Thread(target=self.receive_instruction)
+        #self.mapping_data = threading.Thread(target = self.send_mapping_data)
         self.video.start()
         self.instruction.start()
+        #self.send_mapping_data.start()
+        
+    def send_mapping_data(self):
+        try:
+            connec
+        except Exception as e:
+            print(e)
     def send_data(self,connect,data):
         try:
             connect.send(data.encode('utf-8'))
@@ -124,7 +140,7 @@ class Server:
         except Exception as e:
             print(e)
     def battery_reminder(self):
-        if max(self.battery_voltage) < 6.4:
+        if max(self.battery_voltage) < 0:
             self.turn_off_server()
             self.control.relax(True)
             print("The batteries power are too low. Please recharge the batteries or replace batteries.")
@@ -134,7 +150,16 @@ class Server:
         if self.control.move_flag!=2:
             command=cmd.CMD_RELAX+"#"+str(self.control.move_flag)+"\n"
             self.send_data(self.connection1,command)
-            self.control.move_flag= 2  
+            self.control.move_flag= 2 
+    
+    def lidar_servo_controller(self, args):
+        
+        for i in range(0, 720, 15):
+            answer=lidar_servo.get_sonic_mapping(i)
+            
+            command = cmd.CMD_MAP + '#' + str(answer) + "\n"
+            self.send_data(self.connection1,command)
+            time.sleep(5)
                   
     def receive_instruction(self):
         try:
@@ -203,6 +228,10 @@ class Server:
                     else:
                         command=cmd.CMD_WORKING_TIME+'#'+str(round(self.control.move_count))+'#'+str(0)+"\n"
                     self.send_data(self.connection1,command)
+                elif cmd.CMD_MAP in data:
+                    th = threading.Thread(target=self.lidar_servo_controller, args=['ehe'])
+                    th.start()
+                    th.join()
                 else:
                     self.control.order=data
                     self.control.timeout=time.time()
