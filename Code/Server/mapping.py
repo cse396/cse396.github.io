@@ -72,4 +72,4 @@ def create_data():
         time.sleep(0.5)
 
 def get_mapping_data():
-    return {(5,30), (6,45), (12,90)}
+    return [5,30,6,45,12,30]

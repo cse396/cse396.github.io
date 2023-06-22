@@ -27,6 +27,7 @@ class Client:
         self.detected_text=[]
         self.image=''
     def turn_on_client(self,ip):
+        self.client_socket2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client_socket1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         print (ip)
@@ -34,8 +35,10 @@ class Client:
         try:
             self.client_socket.shutdown(2)
             self.client_socket1.shutdown(2)
+            self.client_socket2.shutdown(2)
             self.client_socket.close()
             self.client_socket1.close()
+            self.client_socket2.close()
         except Exception as e:
             print(e)
     def is_valid_image_4_bytes(self,buf): 
@@ -140,6 +143,11 @@ class Client:
     def receive_data(self):
         data=""
         data=self.client_socket1.recv(1024).decode('utf-8')
+        return data
+    
+    def receive_data_map(self):
+        data=""
+        data=self.client_socket2.recv(1024).decode('utf-8')
         return data
  
 if __name__ == '__main__':

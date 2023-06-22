@@ -22,10 +22,10 @@ class MyWindow(QMainWindow,Ui_server):
         if self.start_tcp:
             self.server.turn_on_server()
             self.server.tcp_flag=True
-            self.video=threading.Thread(target=self.server.transmission_video)
-            self.video.start()
-            self.instruction=threading.Thread(target=self.server.receive_instruction)
-            self.instruction.start()
+            #self.video=threading.Thread(target=self.server.transmission_video)
+            #self.video.start()
+            #self.instruction=threading.Thread(target=self.server.receive_instruction)
+            #self.instruction.start()
             
             if self.user_ui:
                 self.pushButton_On_And_Off.setText('Off')
@@ -46,8 +46,8 @@ class MyWindow(QMainWindow,Ui_server):
             self.states.setText('On')
             self.server.turn_on_server()
             self.server.tcp_flag=True
-            self.video=threading.Thread(target=self.server.transmission_video)
-            self.video.start()
+            #self.video=threading.Thread(target=self.server.transmission_video)
+            #self.video.start()
             self.instruction=threading.Thread(target=self.server.receive_instruction)
             self.instruction.start()
         else:
@@ -55,7 +55,7 @@ class MyWindow(QMainWindow,Ui_server):
             self.states.setText('Off')
             self.server.tcp_flag=False
             try:
-                stop_thread(self.video)
+                #stop_thread(self.video)
                 stop_thread(self.instruction)
             except Exception as e:
                 print(e)
@@ -63,7 +63,7 @@ class MyWindow(QMainWindow,Ui_server):
             print("close")
     def closeEvent(self,event):
         try:
-            stop_thread(self.video)
+            #stop_thread(self.video)
             stop_thread(self.instruction)
         except:
             pass

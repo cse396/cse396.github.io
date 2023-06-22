@@ -8,6 +8,8 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from Client import *
 from Calibration import *
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 class MyWindow(QMainWindow,Ui_client):
     def __init__(self):
         super(MyWindow,self).__init__()
@@ -108,6 +110,13 @@ class MyWindow(QMainWindow,Ui_client):
         self.slider_speed.valueChanged.connect(self.speed)
         self.client.move_speed=str(self.slider_speed.value())
 
+        central_widget = self.Widget_Mapping
+        layout = QtWidgets.QVBoxLayout(central_widget)
+
+        self.fig, self.ax = plt.subplots()
+        self.canvas = FigureCanvas(self.fig)
+        layout.addWidget(self.canvas)
+
         #Timer
         self.timer=QTimer(self)
         self.timer.timeout.connect(self.refresh_image)
@@ -120,6 +129,7 @@ class MyWindow(QMainWindow,Ui_client):
 
         self.drawpoint=[585,135]
         self.initial=True
+
 
     #keyboard
     def keyPressEvent(self, event):
@@ -299,6 +309,25 @@ class MyWindow(QMainWindow,Ui_client):
     def toggle_processed_image(self):
         self.client.image_process = not self.client.image_process
 
+    def receive_mapping(self, ip):
+        try:
+            self.client.client_socket2.connect((ip,9001))
+            self.client.tcp_flag=True
+            print ("Connecttion Successful !")
+        except Exception as e:
+            print ("Connect to server Faild!: Server IP is right? Server is opend?")
+            self.client.tcp_flag=False
+
+        while True:
+            try:
+                alldata=self.client.receive_data_map()
+            except:
+                self.client.tcp_flag=False
+                break
+        
+            print(alldata)
+
+
     def receive_instruction(self,ip):
         try:
             self.client.client_socket1.connect((ip,5001))
@@ -343,6 +372,7 @@ class MyWindow(QMainWindow,Ui_client):
                 elif data[0]==cmd.CMD_MAP:
                     command = eval(data[1])
                     print(command)
+                    #self.refresh_mapping(command)
 
     def refresh_image(self):
         try:
@@ -356,6 +386,22 @@ class MyWindow(QMainWindow,Ui_client):
                 self.label_detected_text.setText(str(self.client.detected_text))
         except Exception as e:
             print(e)
+    def refresh_mapping(self, points):
+        x = [points[point] * np.cos(np.deg2rad(points[point+1])) for point in range(0, len(points), 2)]
+        y = [points[point] * np.sin(np.deg2rad(points[point+1])) for point in range(0, len(points), 2)]
+        print(x)
+        print(y)
+        
+
+        # Plot the dots
+        self.ax.scatter(x, y)
+
+        # Customize the plot
+        self.ax.set_xlabel('X')
+        self.ax.set_ylabel('Y')
+        self.ax.set_title('Scatter Plot')
+        self.canvas.draw()
+
     #BALL
     def chase_ball_and_find_face(self):
         if self.Button_Ball_And_Face.text() == 'Face':
@@ -382,8 +428,11 @@ class MyWindow(QMainWindow,Ui_client):
             self.client.turn_on_client(self.IP)
             self.video=threading.Thread(target=self.client.receiving_video,args=(self.IP,))
             self.instruction=threading.Thread(target=self.receive_instruction,args=(self.IP,))
+            self.map=threading.Thread(target=self.receive_mapping,args=(self.IP,))
             self.video.start() 
+            self.map.start()
             self.instruction.start()
+            
             self.Button_Connect.setText('Disconnect')
             self.timer_power.start(1000)
         else:
@@ -511,7 +560,7 @@ class MyWindow(QMainWindow,Ui_client):
         #print (command)
     def getMappingData(self):
         command=cmd.CMD_MAP+'\n'
-        self.client.send_data(command)
+        #self.client.send_data(command)
     #HEIGHT
     def height(self):
         try:

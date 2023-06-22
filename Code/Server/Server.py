@@ -5,19 +5,19 @@ import time
 import fcntl
 import socket
 import struct
-from picamera2 import Picamera2,Preview
-from picamera2.encoders import JpegEncoder
-from picamera2.outputs import FileOutput
-from picamera2.encoders import Quality
+#from picamera2 import Picamera2,Preview
+#from picamera2.encoders import JpegEncoder
+#from picamera2.outputs import FileOutput
+#from picamera2.encoders import Quality
 from threading import Condition
 import threading
-from Led import *
-from Servo import *
+#from Led import *
+#from Servo import *
 from Thread import *
-from Buzzer import *
-from Control import *
-from ADS7830 import *
-from Ultrasonic import *
+#from Buzzer import *
+#from Control import *
+#from ADS7830 import *
+#from Ultrasonic import *
 from Command import COMMAND as cmd
 from mapping import get_mapping_data
 
@@ -35,20 +35,17 @@ class Server:
     def __init__(self):
         
         self.tcp_flag=False
-        self.led=Led()
-        self.servo=Servo()
-        self.adc=ADS7830()
-        self.buzzer=Buzzer()
-        self.control=Control()
-        self.sonic=Ultrasonic()
-        self.control.Thread_conditiona.start()
-        self.battery_voltage=[8.4,8.4,8.4,8.4,8.4]
+        #self.led=Led()
+        #self.servo=Servo()
+        #self.adc=ADS7830()
+        #self.buzzer=Buzzer()
+        #self.control=Control()
+        #self.sonic=Ultrasonic()
+        #self.control.Thread_conditiona.start()
+        #self.battery_voltage=[8.4,8.4,8.4,8.4,8.4]
     def get_interface_ip(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        return socket.inet_ntoa(fcntl.ioctl(s.fileno(),
-                                            0x8915,
-                                            struct.pack('256s',b'wlan0'[:15])
-                                            )[20:24])
+        return '127.0.0.1'
     def turn_on_server(self):
         #ip adress
         HOST=self.get_interface_ip()
@@ -82,10 +79,10 @@ class Server:
     def reset_server(self):
         self.turn_off_server()
         self.turn_on_server()
-        self.video=threading.Thread(target=self.transmission_video)
+        #self.video=threading.Thread(target=self.transmission_video)
         self.instruction=threading.Thread(target=self.receive_instruction)
         self.mapping_data = threading.Thread(target = self.send_mapping_data)
-        self.video.start()
+        #self.video.start()
         self.instruction.start()
         self.send_mapping_data.start()
         
@@ -100,6 +97,7 @@ class Server:
             #print("send",data)
         except Exception as e:
             print(e)
+    '''
     def transmission_video(self):
         try:
             self.connection,self.client_address = self.server_socket.accept()
@@ -128,7 +126,7 @@ class Server:
                 camera.close()
                 print ("End transmit ... " )
                 break
-
+'''
     def measuring_voltage(self,connect):
         try:
             for i in range(5):
@@ -207,6 +205,13 @@ class Server:
                     self.send_data(self.connection1,command)
                 elif cmd.CMD_POWER in data:
                     self.measuring_voltage(self.connection1)
+                elif cmd.CMD_MAP in data:
+                    command=cmd.CMD_MAP+'#'+str(get_mapping_data())+"\n"
+                    self.send_data(self.connection1, command)
+                #else:
+                #    self.control.order=data
+                #    self.control.timeout=time.time()
+                '''
                 elif cmd.CMD_WORKING_TIME in data: 
                     if self.control.move_timeout!=0 and self.control.relax_flag==True:
                         if self.control.move_count >180:
@@ -219,12 +224,8 @@ class Server:
                     else:
                         command=cmd.CMD_WORKING_TIME+'#'+str(round(self.control.move_count))+'#'+str(0)+"\n"
                     self.send_data(self.connection1,command)
-                elif cmd.CMD_MAP in data:
-                    command=cmd.CMD_MAP+'#'+str(get_mapping_data())+"\n"
-                    self.send_data(self.connection1, command)
-                else:
-                    self.control.order=data
-                    self.control.timeout=time.time()
+                '''
+                
 
         try:    
             stop_thread(thread_power)
