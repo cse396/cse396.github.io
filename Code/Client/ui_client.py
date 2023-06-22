@@ -206,7 +206,7 @@ class Ui_client(object):
         self.Button_Connect.setStyleSheet("font: 10pt \"Arial\";")
         self.Button_Connect.setObjectName("Button_Connect")
         self.Button_Video = QtWidgets.QPushButton(client)
-        self.Button_Video.setGeometry(QtCore.QRect(155, 380, 90, 30))
+        self.Button_Video.setGeometry(QtCore.QRect(155, 395, 90, 30))
         font = QtGui.QFont()
         font.setFamily("Arial")
         font.setBold(False)
@@ -400,7 +400,7 @@ class Ui_client(object):
         self.label_sonic.setObjectName("label_sonic")
         '''
         self.Button_Relax = QtWidgets.QPushButton(client)
-        self.Button_Relax.setGeometry(QtCore.QRect(440, 470, 90, 30))
+        self.Button_Relax.setGeometry(QtCore.QRect(490, 470, 90, 30))
         font = QtGui.QFont()
         font.setFamily("Arial")
         self.Button_Relax.setFont(font)
