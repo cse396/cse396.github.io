@@ -26,14 +26,15 @@ class Ultrasonic_left:
         return pulseTime
         
     def getDistance(self):
-        distance_cm=[0,0,0]
-        for i in range(3):
-            self.send_trigger_pulse()
-            pingTime = self.pulseIn(self.echo_pin,GPIO.HIGH,300*60)
-            distance_cm[i] = pingTime * 340.0 / 2.0 /10000.0
-        distance_cm=sorted(distance_cm)
-        return int(distance_cm[1])
-        
+        try:
+            with open("distanceSonicLeft.txt", "r") as file:
+                distance = float(file.read())
+                return distance
+        except FileNotFoundError:
+            print("File not found.")
+        except ValueError:
+            print("Invalid value in the file.")
+
 # Main program logic follows:
 
 """
