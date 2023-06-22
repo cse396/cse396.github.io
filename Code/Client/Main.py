@@ -38,8 +38,6 @@ class MyWindow(QMainWindow,Ui_client):
         #Button click event
         self.Button_Connect.clicked.connect(self.connect)
         self.Button_Video.clicked.connect(self.video)
-        self.Button_TextDetect.clicked.connect(self.text_detect)
-        self.Button_ImageProcess.clicked.connect(self.toggle_processed_image)
         self.Button_Ball_And_Face.clicked.connect(self.chase_ball_and_find_face)
         self.Button_IMU.clicked.connect(self.imu)
         self.Button_Calibration.clicked.connect(self.showCalibrationWindow)
@@ -47,7 +45,6 @@ class MyWindow(QMainWindow,Ui_client):
         self.Button_Sonic.clicked.connect(self.sonic)
         self.Button_Relax.clicked.connect(self.relax)
         self.Button_Face_ID.clicked.connect(self.showFaceWindow)
-        self.Button_Mapping.clicked.connect(self.getMappingData)
         
         self.Button_ForWard.pressed.connect(self.forward)
         self.Button_ForWard.released.connect(self.stop)
@@ -293,12 +290,6 @@ class MyWindow(QMainWindow,Ui_client):
             self.timer.stop()
             self.Button_Video.setText('Open Video')
 
-    def text_detect(self):
-        self.client.text_detect = not self.client.text_detect
-
-    def toggle_processed_image(self):
-        self.client.image_process = not self.client.image_process
-
     def receive_instruction(self,ip):
         try:
             self.client.client_socket1.connect((ip,5001))
@@ -340,9 +331,6 @@ class MyWindow(QMainWindow,Ui_client):
                         self.Button_Relax.setText('Relax')
                     else:
                         self.Button_Relax.setText('"Too tired..."')
-                elif data[0]==cmd.CMD_MAP:
-                    command = eval(data[1])
-                    print(command)
 
     def refresh_image(self):
         try:
@@ -353,7 +341,6 @@ class MyWindow(QMainWindow,Ui_client):
                 QImg = QImage(self.client.image.data, width, height, 3 * width, QImage.Format_RGB888)
                 self.Video.setPixmap(QPixmap.fromImage(QImg))
                 self.client.video_flag = True
-                self.label_detected_text.setText(str(self.client.detected_text))
         except Exception as e:
             print(e)
     #BALL
@@ -509,9 +496,6 @@ class MyWindow(QMainWindow,Ui_client):
         command=cmd.CMD_SONIC+'\n'
         self.client.send_data(command)
         #print (command)
-    def getMappingData(self):
-        command=cmd.CMD_MAP+'\n'
-        self.client.send_data(command)
     #HEIGHT
     def height(self):
         try:

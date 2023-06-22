@@ -20,7 +20,8 @@ except KeyboardInterrupt:
         print("Stop")
 
         """
-        
+
+"""        
 # Import libraries
 import RPi.GPIO as GPIO
 import time
@@ -72,12 +73,23 @@ while True:
     duty = 2
 
 """
+from gpiozero import Servo
+import RPi.GPIO as GPIO
+import time
+import math
+from gpiozero.pins.pigpio import PiGPIOFactory
+from time import sleep
+factory = PiGPIOFactory()
+servo=Servo(13,min_pulse_width=0.5/1000,max_pulse_width=2.5/1000, pin_factory=factory)
 
 def get_sonic_mapping(deg):
+  print(deg)
   distrad = []
   i = deg
   servo.value = math.sin(math.radians(i))
-  sleep(0.03)
+  sleep(2)
+  return distrad
+  """
   for j in range(2):
     if j == 0:
       GPIO.setmode(GPIO.BCM)
@@ -118,7 +130,5 @@ def get_sonic_mapping(deg):
     print(distance)
     distrad.append((distance,i))
     GPIO.cleanup()
-  
+  """
   return distrad
-
-"""

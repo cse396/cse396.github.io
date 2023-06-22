@@ -506,15 +506,15 @@ if __name__=='__main__':
     self = Control()
     self.relax(False)
     #quit()
-    """
+    
     ultrasonic_left = Ultrasonic_left()
     ultrasonic_right = Ultrasonic_right()
-    """
+    
     time.sleep(2)
     while(True) : 
-        call_forward(self)
+        # call_forward(self)
         print("sol-sag")
-        """
+        
         print("right distance: ", ultrasonic_right.getDistance())
         print("left distance: ", ultrasonic_left.getDistance())
         if(ultrasonic_right.getDistance() == 0):
@@ -535,7 +535,7 @@ if __name__=='__main__':
             choice = 0
         
         choice = int(input())
-        
+        """
         if choice == 1:
             rightTT(self)
             tenStep(self)

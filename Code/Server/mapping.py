@@ -19,7 +19,7 @@ def create_data():
 
     with open("distance.txt", "w") as file:
         file.write(str(data))
-
+"""
 create_data()
 
 while True:
@@ -70,3 +70,4 @@ while True:
     plt.draw()
     plt.pause(0.01)
     time.sleep(0.5)
+    """

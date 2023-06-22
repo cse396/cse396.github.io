@@ -1,7 +1,7 @@
 import RPi.GPIO as GPIO
 import time
 GPIO.setmode(GPIO.BCM)
-
+# left
 TRIG = 6 #6
 ECHO = 5 #5
 
@@ -33,7 +33,7 @@ try:
 		distance = round(distance, 2)
 
 		if distance > 2 and distance < 400:
-			f = open("distanceSonic2.txt" , "w")     
+			f = open("distanceSonicLeft.txt" , "w")     
 			f.write(str(distance))
 			f.close()
 except KeyboardInterrupt: 
