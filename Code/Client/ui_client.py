@@ -349,7 +349,7 @@ class Ui_client(object):
         self.label_5.setAlignment(QtCore.Qt.AlignCenter)
         self.label_5.setObjectName("label_5")
         self.label_point = QtWidgets.QLabel(client)
-        self.label_point.setGeometry(QtCore.QRect(595, 145, 60, 20))
+        self.label_point.setGeometry(QtCore.QRect(5905, 145, 60, 20))
         font = QtGui.QFont()
         font.setFamily("Arial")
         self.label_point.setFont(font)
