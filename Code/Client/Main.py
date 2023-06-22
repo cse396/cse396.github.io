@@ -301,7 +301,7 @@ class MyWindow(QMainWindow,Ui_client):
             image = QPixmap("graph.png")
 
             # Draw the image
-            qp.drawPixmap(QRect(485, 90, 200, 200), image)
+            qp.drawPixmap(QRect(485, 90, 300, 300), image)
         except Exception as e:
             print(e)
 
