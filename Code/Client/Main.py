@@ -13,10 +13,16 @@ import numpy as np
 import pandas as pd
 import ast
 import time
+import errno
+import json
+import threading
 
 class MyWindow(QMainWindow,Ui_client):
     global df 
     def __init__(self):
+        self.create_data()
+
+
         super(MyWindow,self).__init__()
         self.setupUi(self)
         self.setWindowIcon(QIcon('Picture/logo_Mini.png'))
@@ -124,6 +130,34 @@ class MyWindow(QMainWindow,Ui_client):
 
         self.drawpoint=[585,135]
         self.initial=True
+
+        self.conn = None
+
+            # Create a socket object
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+        # Define the host and port
+        host = 'localhost'
+        port = 9000
+
+        # Bind the socket to the host and port
+        sock.bind((host, port))
+
+        # Listen for incoming connections
+        sock.listen(1)
+
+        print("Waiting for a connection...")
+
+        # Accept a connection
+        self.conn, addr = sock.accept()
+        print("Connected!")
+        self.conn.setblocking(False)
+
+        self.fig, self.ax = plt.subplots()
+
+        thread = threading.Thread(target=self.receive_data_and_write_files)
+        thread.start()
+
 
     #keyboard
     def keyPressEvent(self, event):
@@ -241,13 +275,84 @@ class MyWindow(QMainWindow,Ui_client):
         with open("distance.txt", "w") as file:
             file.write(str(data))
 
+    def receive_data_and_write_files(self):
+        received_data = ""
+        while True:
+            try:
+                received_data = self.conn.recv(1024).decode()
+            except socket.error as e:
+                if e.errno != errno.EAGAIN or e.errno != errno.EWOULDBLOCK:
+                    time.sleep(1)
+                    continue
+            
+            if not received_data:
+                time.sleep(1)
+                continue
+
+            print("Received data: ", received_data)
+
+            if '}{' in received_data:
+                # Split the received data string into individual JSON objects
+                data_list = received_data.split('}{')
+
+                # Process each JSON object separately
+                data_dicts = []
+                for data_str in data_list:
+                    # Add back the curly braces for each JSON object
+                    if not data_str.startswith('{'):
+                        data_str = '{' + data_str
+                    if not data_str.endswith('}'):
+                        data_str = data_str + '}'
+
+                    # Parse the JSON object
+                    try:
+                        data_dict = json.loads(data_str)
+                        data_dicts.append(data_dict)
+                    except json.JSONDecodeError as e:
+                        print(f"Error decoding JSON: {e}")
+                        continue
+                
+                for i in data_dicts:
+                    # Write received data to degree.txt
+                    with open('degree.txt', 'w') as degree_file:
+                        degree_file.write(str(i['degree']))
+                    
+                    # Write received data to distanceSonic1.txt
+                    with open('distanceSonic1.txt', 'w') as sonic1_file:
+                        sonic1_file.write(str(i['sonic1']))
+                    
+                    # Write received data to distanceSonic2.txt
+                    with open('distanceSonic2.txt', 'w') as sonic2_file:
+                        sonic2_file.write(str(i['sonic2']))
+                    
+                    print("Data written to files successfully.")
+                    time.sleep(0.5)
+                time.sleep(0.5)
+            else:
+                data_dict = json.loads(received_data)
+
+                # received_data = ast.literal_eval(received_data)
+                degree = data_dict['degree']
+                sonic1 = data_dict['sonic1']
+                sonic2 = data_dict['sonic2']
+                
+                # Write received data to degree.txt
+                with open('degree.txt', 'w') as degree_file:
+                    degree_file.write(str(degree))
+                
+                # Write received data to distanceSonic1.txt
+                with open('distanceSonic1.txt', 'w') as sonic1_file:
+                    sonic1_file.write(str(sonic1))
+                
+                # Write received data to distanceSonic2.txt
+                with open('distanceSonic2.txt', 'w') as sonic2_file:
+                    sonic2_file.write(str(sonic2))
+
+                print("Data written to files successfully.")
+                time.sleep(0.5)
 
 
-    def paintEvent(self,e):
-
-        #plt.ion()
-        self.create_data()
-
+    def paintEvent(self, e):
         degree = 0
         with open("degree.txt", "r") as file:
             degree = file.read()
@@ -261,6 +366,7 @@ class MyWindow(QMainWindow,Ui_client):
         with open ("distanceSonic1.txt", "r") as file:
             sonic1 = file.read()
 
+
         sonic2 = 0 
         with open ("distanceSonic2.txt", "r") as file:
             sonic2 = file.read()
@@ -270,8 +376,12 @@ class MyWindow(QMainWindow,Ui_client):
         with open ("distance.txt", "r") as file:
             data = file.read().replace('\n', '')
 
-        
-        data = ast.literal_eval(data)
+        try:        
+            data = ast.literal_eval(data)
+        except:
+            print("Error in ast.literal_eval(data)")
+            time.sleep(0.5)
+            return
 
         df = pd.DataFrame.from_dict(data) 
 
@@ -289,9 +399,8 @@ class MyWindow(QMainWindow,Ui_client):
 
         with open("distance.txt", "w") as file:
             file.write(str(df.to_dict()))
-        fig, ax = plt.subplots()
-        ax.clear() 
-        ax.scatter(plotData["x"], plotData["y"])
+        self.ax.clear() 
+        self.ax.scatter(plotData["x"], plotData["y"])
         plt.savefig("graph.png")
         try:
             qp = QPainter()
@@ -301,9 +410,13 @@ class MyWindow(QMainWindow,Ui_client):
             image = QPixmap("graph.png")
 
             # Draw the image
-            qp.drawPixmap(QRect(485, 90, 300, 300), image)
+            qp.drawPixmap(QRect(485, 90, 200, 200), image)
         except Exception as e:
             print(e)
+
+        self.update()
+        time.sleep(0.5)
+
 
     def mouseMoveEvent(self, event):
         x=event.pos().x()
