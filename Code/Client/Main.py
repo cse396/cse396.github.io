@@ -40,6 +40,7 @@ class MyWindow(QMainWindow,Ui_client):
         #Button click event
         self.Button_Connect.clicked.connect(self.connect)
         self.Button_Video.clicked.connect(self.video)
+        self.Button_ObjectDetect.clicked.connect(self.object_detect)
         self.Button_TextDetect.clicked.connect(self.text_detect)
         self.Button_ImageProcess.clicked.connect(self.toggle_processed_image)
         self.Button_Ball_And_Face.clicked.connect(self.chase_ball_and_find_face)
@@ -1073,6 +1074,9 @@ class ledWindow(QMainWindow,Ui_led):
         self.hsl[0] = float(self.lineEdit_H.text())
         self.hsl[1] = float(self.lineEdit_S.text())
         self.hsl[2] = float(self.lineEdit_L.text())
+    
+    def object_detect(self):
+        self.client.object_detect = not self.client.object_detect
 
     def changeHSLText(self):
         self.lineEdit_H.setText(str(int(self.hsl[0])))
