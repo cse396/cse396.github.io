@@ -51,6 +51,7 @@ class MyWindow(QMainWindow,Ui_client):
         self.Button_Relax.clicked.connect(self.relax)
         self.Button_Face_ID.clicked.connect(self.showFaceWindow)
         self.Button_Mapping.clicked.connect(self.getMappingData)
+        self.Button_SaveToMap.clicked.connect(self.save_to_map)
         
         self.Button_ForWard.pressed.connect(self.forward)
         self.Button_ForWard.released.connect(self.stop)
@@ -313,6 +314,11 @@ class MyWindow(QMainWindow,Ui_client):
     def toggle_processed_image(self):
         self.client.image_process = not self.client.image_process
 
+    def save_to_map(self):
+        
+        self.ax.text(2, 2, str(self.client.detected_text), ha='center', va='bottom')
+        self.canvas.draw()
+
     def receive_mapping(self, ip):
         try:
             self.client.client_socket2.connect((ip,9001))
@@ -408,6 +414,7 @@ class MyWindow(QMainWindow,Ui_client):
 
         # Plot the dots
         self.ax.scatter(x_true, y_true)
+        self.ax.scatter([0], [0], marker='*')
 
         # Customize the plot
         self.ax.set_xlabel('X')
