@@ -390,8 +390,13 @@ class MyWindow(QMainWindow,Ui_client):
         except Exception as e:
             print(e)
     def refresh_mapping(self, points):
+        for i in range(len(points)):
+            if points[i][0] >= 1000:
+                del points[i]
+
         x = [point[0] * np.cos(np.deg2rad(point[1])) for point in points]
         y = [point[0] * np.sin(np.deg2rad(point[1])) for point in points]
+        
         print(x)
         print(y)
         
