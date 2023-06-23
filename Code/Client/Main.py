@@ -321,11 +321,14 @@ class MyWindow(QMainWindow,Ui_client):
         while True:
             try:
                 alldata=self.client.receive_data_map()
+                ev = eval(alldata)
+                self.refresh_mapping(ev)
             except:
                 self.client.tcp_flag=False
+                print('mapping error')
                 break
         
-            print(alldata)
+            
 
 
     def receive_instruction(self,ip):
@@ -387,8 +390,8 @@ class MyWindow(QMainWindow,Ui_client):
         except Exception as e:
             print(e)
     def refresh_mapping(self, points):
-        x = [points[point] * np.cos(np.deg2rad(points[point+1])) for point in range(0, len(points), 2)]
-        y = [points[point] * np.sin(np.deg2rad(points[point+1])) for point in range(0, len(points), 2)]
+        x = [point[0] * np.cos(np.deg2rad(point[1])) for point in points]
+        y = [point[0] * np.sin(np.deg2rad(point[1])) for point in points]
         print(x)
         print(y)
         
