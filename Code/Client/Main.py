@@ -307,6 +307,9 @@ class MyWindow(QMainWindow,Ui_client):
     def text_detect(self):
         self.client.text_detect = not self.client.text_detect
 
+    def object_detect(self):
+        self.client.object_detect = not self.client.object_detect
+
     def toggle_processed_image(self):
         self.client.image_process = not self.client.image_process
 
@@ -323,11 +326,12 @@ class MyWindow(QMainWindow,Ui_client):
             try:
                 alldata=self.client.receive_data_map()
                 ev = eval(alldata)
+                print(ev)
                 self.refresh_mapping(ev)
-            except:
-                self.client.tcp_flag=False
+            except KeyboardInterrupt:
+                
                 print('mapping error')
-                break
+                
         
             
 
@@ -394,17 +398,16 @@ class MyWindow(QMainWindow,Ui_client):
         x = [point[0] * np.cos(np.deg2rad(point[1])) for point in points]
         y = [point[0] * np.sin(np.deg2rad(point[1])) for point in points]
         
+        x_true = []
+        y_true=[]
         for i in range(len(x)):
-            if x[i] > 100 or x[i] < -100 or y[i] > 100 or y[i] < -100:
-                del x[i]
-                del y[i]
-            
-        print(x)
-        print(y)
+            if x[i] < 100 and x[i] > -100 and y[i] < 100 and y[i] > -100:
+                x_true.append(x[i])
+                y_true.append(y[i])
         
 
         # Plot the dots
-        self.ax.scatter(x, y)
+        self.ax.scatter(x_true, y_true)
 
         # Customize the plot
         self.ax.set_xlabel('X')
@@ -1074,9 +1077,6 @@ class ledWindow(QMainWindow,Ui_led):
         self.hsl[0] = float(self.lineEdit_H.text())
         self.hsl[1] = float(self.lineEdit_S.text())
         self.hsl[2] = float(self.lineEdit_L.text())
-    
-    def object_detect(self):
-        self.client.object_detect = not self.client.object_detect
 
     def changeHSLText(self):
         self.lineEdit_H.setText(str(int(self.hsl[0])))
