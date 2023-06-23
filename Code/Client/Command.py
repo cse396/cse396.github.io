@@ -19,5 +19,6 @@ class COMMAND:
     CMD_ATTITUDE = "CMD_ATTITUDE"
     CMD_RELAX = "CMD_RELAX"
     CMD_MAP = "CMD_MAP"
+    CMD_CTRL = "CMD_CTRL"
     def __init__(self):
         pass

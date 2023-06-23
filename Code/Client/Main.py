@@ -537,6 +537,10 @@ class MyWindow(QMainWindow,Ui_client):
             #print (command)
         else:
             pass
+
+    def autonom_control(self):
+        command=cmd.CMD_CTRL+'\n'
+        self.client.send_data(command)
     #BUZZER
     def buzzer(self):
         if self.Button_Buzzer.text() == 'Buzzer':
