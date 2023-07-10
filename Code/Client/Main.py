@@ -25,6 +25,11 @@ class MyWindow(QMainWindow,Ui_client):
         self.Key_Q=False
         self.Key_E=False
         self.Key_Space=False
+        self.forward_sonic = -1
+        self.before_forward_sonic = -1
+        self.moved=False
+        self.robot_x=0
+        self.robot_y=0
 
         self.client=Client()
         self.client.move_speed=str(self.slider_speed.value())
@@ -372,6 +377,11 @@ class MyWindow(QMainWindow,Ui_client):
                     break
                 elif data[0]==cmd.CMD_SONIC:
                     self.Button_Sonic.setText(data[1]+'cm')
+                    self.before_forward_sonic = self.forward_sonic
+                    self.forward_sonic = data[1]
+                    if not self.moved and self.forward_sonic != self.before_forward_sonic:
+                        self.moved=True
+                        self.before_forward_sonic=0
                     #self.label_sonic.setText('Obstacle:'+data[1]+'cm')
                     #print('Obstacle:',data[1])
                 elif data[0]==cmd.CMD_POWER:
@@ -401,9 +411,18 @@ class MyWindow(QMainWindow,Ui_client):
         except Exception as e:
             print(e)
     def refresh_mapping(self, points):
-        x = [point[0] * np.cos(np.deg2rad(point[1])) for point in points]
-        y = [point[0] * np.sin(np.deg2rad(point[1])) for point in points]
-        
+        print("pointss")
+        print(points)
+        rotate_deg=points[2]
+        if(rotate_deg == 'T'):
+                self.moved=False
+                self.before_forward_sonic=-2
+                self.forward_sonic=-2
+                return
+        diff=self.forward_sonic-self.before_forward_sonic
+        rotate_deg=int(rotate_deg)
+        x = [point[0] * np.cos(np.deg2rad(point[1])) + np.cos(np.deg2rad(rotate_deg)) * diff for point in points[:2]]
+        y = [point[0] * np.sin(np.deg2rad(point[1])) + np.sin(np.deg2rad(rotate_deg)) * diff for point in points[:2]]
         x_true = []
         y_true=[]
         for i in range(len(x)):
@@ -411,10 +430,11 @@ class MyWindow(QMainWindow,Ui_client):
                 x_true.append(x[i])
                 y_true.append(y[i])
         
-
+        self.robot_x += np.cos(np.deg2rad(rotate_deg)) * diff
+        self.robot_y += np.sin(np.deg2rad(rotate_deg)) * diff
         # Plot the dots
         self.ax.scatter(x_true, y_true)
-        self.ax.scatter([0], [0], marker='*')
+        self.ax.scatter([self.robot_x], [self.robot_y], marker='*')
 
         # Customize the plot
         self.ax.set_xlabel('X')
