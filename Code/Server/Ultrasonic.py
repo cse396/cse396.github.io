@@ -8,13 +8,27 @@ class Ultrasonic:
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.trigger_pin,GPIO.OUT)
         GPIO.setup(self.echo_pin,GPIO.IN)
+    def setup_pin(self):
+        GPIO.setwarnings(False)
+        self.trigger_pin = 27
+        self.echo_pin = 22
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup(self.trigger_pin,GPIO.OUT)
+        GPIO.setup(self.echo_pin,GPIO.IN)
     def send_trigger_pulse(self):
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup(self.trigger_pin,GPIO.OUT)
+        GPIO.setup(self.echo_pin,GPIO.IN)
         GPIO.output(self.trigger_pin,True)
         time.sleep(0.00015)
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup(self.trigger_pin,GPIO.OUT)
+        GPIO.setup(self.echo_pin,GPIO.IN)
         GPIO.output(self.trigger_pin,False)
 
     def pulseIn(self,pin,level,timeOut): # obtain pulse time of a pin under timeOut
         t0 = time.time()
+        self.setup_pin()
         while(GPIO.input(pin) != level):
             if((time.time() - t0) > timeOut*0.000001):
                 return 0;
@@ -35,20 +49,7 @@ class Ultrasonic:
         return int(distance_cm[1])
         
 # Main program logic follows:
-
 if __name__ == '__main__':
-    ultrasonic_otonom = Ultrasonic()
+    pass
+        
 
-    try:
-        while True:
-            data= ultrasonic_otonom.getDistance()   #Get the value
-            f = open("distance.txt" , "w")    
-            f.write(str(data))
-            f.close()
-            print(data)
-            if(data < 15 and data != 0):
-                break
-            time.sleep(1)
-            
-    except KeyboardInterrupt:
-        print ("\nEnd of program")

@@ -58,17 +58,11 @@ class PCA9685:
     self.write(self.__MODE1, oldmode | 0x80)
 
   def setPWM(self, channel, on, off):
-    if channel != 0 and channel!=1 and channel!=11:
-      return
-    if channel == 11:
-      channel = 14
     "Sets a single PWM channel"
     if channel == 14:
       return
-      
     if channel == 11:
-      channel = 14
-      
+      channel = 14    
     self.write(self.__LED0_ON_L+4*channel, on & 0xFF)
     self.write(self.__LED0_ON_H+4*channel, on >> 8)
     self.write(self.__LED0_OFF_L+4*channel, off & 0xFF)

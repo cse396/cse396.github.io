@@ -4,32 +4,27 @@ import math
 import smbus
 import copy
 import threading
-import os
 from IMU import *
 from PID import *
 import numpy as np
 from Servo import *
-from Ultrasonic import *
-from Ultrasonic_left import *
-from Ultrasonic_right import *
 from Command import COMMAND as cmd
-read_path =  "/tmp/pythonreadX_fifo"
+from Ultrasonic import *
+import multiprocessing
 
 class Control:
     def __init__(self):
         self.imu=IMU()
         self.servo=Servo()
         self.pid = Incremental_PID(0.5,0.0,0.0025)
-        self.speed = 10 
+        self.speed = 8
         self.height = 99
         self.timeout = 0
         self.move_flag = 0
         self.move_count = 0
         self.move_timeout = 0
         self.order = ['','','','','']
-        #self.point = [[0, 99, 10], [0, 99, 10], [0, 99, -10], [0, 99, -10]] programla gelen
-        #self.point = [[10, 99, 11], [10, 99, 7], [9, 99,-11], [-3, 99, -11]] 2. eklediğimz
-        self.point = [[13, 99, 11], [12, 99, 12], [11, 99,-7], [1, 99, -10]]
+        self.point = [[0, 99, 10], [0, 99, 10], [0, 99, -10], [0, 99, -10]]
         self.calibration_point = self.readFromTxt('point')
         self.angle = [[90,0,0],[90,0,0],[90,0,0],[90,0,0]]
         self.calibration_angle=[[0,0,0],[0,0,0],[0,0,0],[0,0,0]]
@@ -38,7 +33,7 @@ class Control:
         self.attitude_flag=False
         self.Thread_conditiona=threading.Thread(target=self.condition)
         self.calibration()
-        #self.relax(True)
+        self.relax(True)
     def readFromTxt(self,filename):
         file1 = open(filename + ".txt", "r")
         list_row = file1.readlines()
@@ -277,15 +272,11 @@ class Control:
                 self.point[i][1]=pos[2,2*i]
                 self.point[i][2]=pos[1,2*i]
         else: #'backWard' 'forWard' 'setpRight' 'setpLeft'
-            self.point[0][0]=X1+15
-            self.point[0][1]=Y1+2
-            self.point[1][0]=X2+10
-            self.point[1][1]=Y2
-            self.point[2][0]=X1+10
-            self.point[2][1]=Y1
-            self.point[3][0]=X2+10
-            self.point[3][1]=Y2-2
             for i in range(2):
+                self.point[i*2][0]=X1+10
+                self.point[i*2][1]=Y1
+                self.point[i*2+1][0]=X2+10
+                self.point[i*2+1][1]=Y2
                 self.point[i*2][2]=Z1+((-1)**i)*10
                 self.point[i*2+1][2]=Z2+((-1)**i)*10
         self.run()
@@ -344,7 +335,6 @@ class Control:
             #time.sleep(0.01)
     def stop(self):
         p=[[10, self.height, 10], [10, self.height, 10], [10, self.height, -10], [10, self.height, -10]]
-        '''
         for i in range(4):
             p[i][0]=(p[i][0]-self.point[i][0])/50
             p[i][1]=(p[i][1]-self.point[i][1])/50
@@ -354,11 +344,7 @@ class Control:
                 self.point[i][0]+=p[i][0]
                 self.point[i][1]+=p[i][1]
                 self.point[i][2]+=p[i][2]
-        '''
-        self.point = [[13, 99, 11], [12, 99, 12], [21, 80,-7], [1, 98, -10]]
-        #self.point = [[0, 99, 10], [0, 99, 10], [0, 99, -10], [0, 99, -10]]
-
-        self.run()
+            self.run()
     def setpLeft(self):
         for i in range(90,451,self.speed):
             Z1=10*math.cos(i*math.pi/180)
@@ -402,7 +388,6 @@ class Control:
         else:
             self.stop()
             self.move_timeout=time.time()
-        time.sleep(1)
     def upAndDown(self,var):
         self.height=var+99
         self.changeCoordinates('height',0,self.height,0,0,self.height,0)
@@ -466,89 +451,195 @@ class Control:
         for i in range(4):
             AB[:, i] = pos + rot_mat * footpoint_struc[:, i] - body_struc[:, i]
         return (AB)
-
-            
-def call_forward(self):
+        
+def call_forward(self, e):
     x = 0
     print("forward")
     self.relax(False)
     
     ultrasonic2 = Ultrasonic()
     while True:
-        #if(ultrasonic2.getDistance() < 15 and ultrasonic2.getDistance() != 0):
-            #break
+        time.sleep(0.001)
+        if(ultrasonic2.getDistance() < 15 and ultrasonic2.getDistance() != 0):
+            print("durdu " + str(ultrasonic2.getDistance()))
+            break
         print(ultrasonic2.getDistance())
+        if e.is_set():
+            break
         self.forWard()
         x+= 1
+    if ultrasonic2.getDistance() > 15 or ultrasonic2.getDistance() == 5:
+        call_forward(self)
+    self.relax(False)
+     
+        
+def rightTT(self, e):
+    print("right")
+    self.relax(False)
+    for i in range(36):
+        if e.is_set():
+            break
+        self.setpRight()
     self.relax(False)
         
-def rightTT(self):
+def leftTTT(self, e):
+    print("left")
     self.relax(False)
-    for i in range(17):
-        self.turnRight()
-    self.relax(False)
-        
-def leftTTT(self):
-    self.relax(False)
-    for i in range(17):
-        self.turnLeft()
+    for i in range(60):
+        if e.is_set():
+            break
+        self.setpLeft()
     self.relax(False)
     
-def tenStep(self):
+def tenStep(self, e):
+    print("ten step")
     self.relax(False)
     for i in range(15):
+        if e.is_set():
+            break
         self.forWard()
     self.relax(False)
 
 
 #Control py        
-if __name__=='__main__':
+def autonom_rob(e):
     self = Control()
-    self.relax(False)
+    self.relax(True)
+    f = open("degree.txt" , "r") 
+    turn_data=f.read()
+    f.close() 
+    if turn_data == '' or turn_data=='T':
+        degree=0
+    else:
+        degree=int(turn_data)
     #quit()
-    
-    ultrasonic_left = Ultrasonic_left()
-    ultrasonic_right = Ultrasonic_right()
-    
+    print('testttt510')
     time.sleep(2)
-    while(True) : 
-        # call_forward(self)
-        print("sol-sag")
+    while(not e.is_set()): 
+        print('testttt513')
+        call_forward(self, e)
+        f = open("distance_right.txt" , "r") 
+        x = f.read()
+        f.close()
+        if x == -1:
+            time.sleep(10)
+        f_r = open("distance_right.txt" , "r") 
+        f_r_data = f_r.read()
+        f_r.close()
+        f_l = open("distance_left.txt" , "r") 
+        f_l_data = f_l.read()
+        f_l.close()
         
-        print("right distance: ", ultrasonic_right.getDistance())
-        print("left distance: ", ultrasonic_left.getDistance())
-        if(ultrasonic_right.getDistance() == 0):
-            print("right distance2: ", ultrasonic_right.getDistance())
+        print("right distance: ", f_r_data)
+        print("left distance: ", f_l_data)
+        if(f_r_data == 0):
             print("turn right")
             choice = 1
-        elif(ultrasonic_left.getDistance() == 0):
-            print("left distance2: ", ultrasonic_left.getDistance())
+        elif(f_l_data == 0):
             print("turn left")
             choice = 0
-        elif(ultrasonic_left.getDistance() < ultrasonic_right.getDistance()):
-            print("right distance2: ", ultrasonic_right.getDistance())
+        elif(f_l_data < f_r_data):
             print("turn right")
             choice = 1
-        elif(ultrasonic_left.getDistance() >= ultrasonic_right.getDistance()):
-            print("left distance2: ", ultrasonic_left.getDistance())
+        elif(f_l_data >= f_r_data):
             print("turn left")
             choice = 0
         
-        choice = int(input())
-        """
+        if e.is_set():
+            break
         if choice == 1:
-            rightTT(self)
-            tenStep(self)
-            while(int(input()) == 1):
-                tenStep(self)
-            leftTTT(self)
+            f = open("degree.txt" , "w") 
+            f.write("T")
+            f.close()
+            rightTT(self, e)
+            degree+=90
+            f = open("degree.txt" , "w") 
+            f.write(str(degree))
+            f.close()
+            if e.is_set():
+                break
+            call_forward(self, e)
+            '''
+            f = open("distance_right.txt" , "r") 
+            x = f.read()
+            f.close()
+            if x == -1:
+                time.sleep(5)
+            f_l = open("distance_left.txt" , "r") 
+            f_l_data = f_l.read()
+            f_l.close()
+            if f_l_data == 0 or f_l_data > 30:
+                check = 1
+            else:
+                check = 0
+            
+            
+            while(check == 0):
+                call_forward()
+                while(int(input()) == 1):
+                    f = open("distance_right.txt" , "r") 
+                    x = f.read()
+                    f.close()
+                    if x == -1:
+                        time.sleep(5)
+                    f_l = open("distance_left.txt" , "r") 
+                    f_l_data = f_l.read()
+                    f_l.close()
+                    if f_l_data == 0 or f_l_data > 30:
+                        check = 1
+                    else:
+                        check = 0
+            '''    
+            leftTTT(self,e)
             
         elif choice == 0:
-            leftTTT(self)
-            tenStep(self)
-            while(int(input()) == 1):
-                tenStep(self)
-            rightTT(self)
-        """
+            f = open("degree.txt" , "w") 
+            f.write("T")
+            f.close()
+            leftTTT(self,e)
+            degree-=90
+            f = open("degree.txt" , "w") 
+            f.write(str(degree))
+            f.close()
+            if e.is_set():
+                break
+            call_forward(self,e)
+            
+            '''
+            f = open("distance_right.txt" , "r") 
+            x = f.read()
+            f.close()
+            if x == -1:
+                time.sleep(5)
+            f_r = open("distance_right.txt" , "r") 
+            f_r_data = f_r.read()
+            f_r.close()
+            if f_r_data == 0 or f_r_data > 30:
+                check = 1
+            else:
+                check = 0
+            
+            while(check == 0):
+                call_forward()
+                while(int(input()) == 1):
+                    f = open("distance_right.txt" , "r") 
+                    x = f.read()
+                    f.close()
+                    if x == -1:
+                        time.sleep(5)
+                    f_r = open("distance_right.txt" , "r") 
+                    f_r_data = f_l.read()
+                    f_r.close()
+                    if f_r_data == 0 or f_r_data > 30:
+                        check = 1
+                    else:
+                        check = 0
+            '''
+            rightTT(self,e)
+    self.relax(True)
         
+
+
         
+   
+

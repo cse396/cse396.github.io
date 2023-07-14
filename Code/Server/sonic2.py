@@ -33,6 +33,7 @@ try:
 		distance = round(distance, 2)
 
 		if distance > 2 and distance < 400:
+			print(distance)
 			f = open("distanceSonicLeft.txt" , "w")     
 			f.write(str(distance))
 			f.close()

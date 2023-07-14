@@ -79,17 +79,24 @@ import time
 import math
 from gpiozero.pins.pigpio import PiGPIOFactory
 from time import sleep
+from Ultrasonic import *
 factory = PiGPIOFactory()
 servo=Servo(13,min_pulse_width=0.5/1000,max_pulse_width=2.5/1000, pin_factory=factory)
 
-def get_sonic_mapping(deg):
+def get_sonic_mapping_rotation(deg):
+  i = deg
+  servo.value = math.sin(math.radians(i))
+
+def get_sonic_mapping(deg, back_servo, forw_servo):
+  sonic=Ultrasonic()
   print(deg)
   distrad = []
   i = deg
   servo.value = math.sin(math.radians(i))
-  sleep(2)
-  return distrad
-  """
+  print('rad')
+  print(math.sin(math.radians(i)))
+  sleep(0.1)
+  
   for j in range(2):
     if j == 0:
       GPIO.setmode(GPIO.BCM)
@@ -99,6 +106,7 @@ def get_sonic_mapping(deg):
       #GPIO.setwarnings(False)
       GPIO.setup(TRIG, GPIO.OUT)
       GPIO.setup(ECHO, GPIO.IN)
+      i=back_servo
     else:
       GPIO.setmode(GPIO.BCM)
       TRIG = 25 #6
@@ -107,15 +115,17 @@ def get_sonic_mapping(deg):
       #GPIO.setwarnings(False)
       GPIO.setup(TRIG, GPIO.OUT)
       GPIO.setup(ECHO, GPIO.IN)
-      i-=180
+      i=forw_servo
       
 
-    time.sleep(0.3)
+    time.sleep(0.2)
 
     GPIO.output(TRIG, True)
     time.sleep(0.00001)
     GPIO.output(TRIG, False)
-
+    
+    pulse_start = 0;
+    pulse_end = 0;
     while GPIO.input(ECHO)==0:
       pulse_start = time.time()
 
@@ -130,5 +140,39 @@ def get_sonic_mapping(deg):
     print(distance)
     distrad.append((distance,i))
     GPIO.cleanup()
-  """
+    
+    f = open("distance_left.txt" , "w") 
+    f.write(str(-1))
+    f.close() 
+        
+    f = open("distance_right.txt" , "w") 
+    f.write(str(-1))
+    f.close() 
+        
+    if deg == 200:
+      if j==0:
+        f = open("distance_left.txt" , "w") 
+        f.write(str(distance))
+        f.close() 
+      else:
+        f = open("distance_right.txt" , "w") 
+        f.write(str(distance))
+        f.close() 
+    """elif deg == 345:
+      if j==0:
+        f = open("distance_right.txt" , "w") 
+        f.write(str(distance))
+        f.close() 
+      else:
+        f = open("distance_left.txt" , "w") 
+        f.write(str(distance))
+        f.close() """
+  f = open("degree.txt" , "r") 
+  turn_data=f.read()
+  f.close() 
+  if turn_data == '':
+    turn_data=90
+  
+  distrad.append((turn_data))
+  distrad.append((sonic.getDistance()))
   return distrad

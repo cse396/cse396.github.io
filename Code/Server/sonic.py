@@ -33,9 +33,10 @@ try:
         distance = round(distance, 2)
 
         if distance > 1 and distance < 400:
+            print(distance)
             f = open("distanceSonicRight.txt" , "w") 
             f.write(str(distance))
-            print(distance)
+            
             f.close()
 
 except KeyboardInterrupt: 

@@ -20,5 +20,6 @@ class COMMAND:
     CMD_RELAX = "CMD_RELAX"
     CMD_WORKING_TIME = "CMD_WORKING_TIME"
     CMD_MAP = "CMD_MAP"
+    CMD_CTRL = "CMD_CTRL"
     def __init__(self):
         pass
