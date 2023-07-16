@@ -10,6 +10,9 @@ from Client import *
 from Calibration import *
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+import statistics
+from sklearn.cluster import DBSCAN
+import numpy as np
 class MyWindow(QMainWindow,Ui_client):
     def __init__(self):
         super(MyWindow,self).__init__()
@@ -30,6 +33,11 @@ class MyWindow(QMainWindow,Ui_client):
         self.moved=False
         self.robot_x=0
         self.robot_y=0
+        self.point_count=0
+        self.x_true = []
+        self.y_true=[]
+        self.xy = []
+        self.last_measures=[]
 
         self.client=Client()
         self.client.move_speed=str(self.slider_speed.value())
@@ -124,6 +132,15 @@ class MyWindow(QMainWindow,Ui_client):
         self.canvas = FigureCanvas(self.fig)
         layout.addWidget(self.canvas)
 
+
+        central_widget_mainmap = self.Widget_Main_Mapping
+        layout_main_map = QtWidgets.QVBoxLayout(central_widget_mainmap)
+
+        self.fig_map, self.ax_map = plt.subplots()
+        self.canvas_map = FigureCanvas(self.fig_map)
+        layout_main_map.addWidget(self.canvas_map)
+
+
         #Timer
         self.timer=QTimer(self)
         self.timer.timeout.connect(self.refresh_image)
@@ -154,7 +171,7 @@ class MyWindow(QMainWindow,Ui_client):
            
         if(event.key() == Qt.Key_R):
             print("R")
-            self.relax()
+            self.autonom_control()
         if(event.key() == Qt.Key_L):
             print("L")
             self.showLedWindow()
@@ -342,6 +359,8 @@ class MyWindow(QMainWindow,Ui_client):
             except KeyboardInterrupt:
                 
                 print('mapping error')
+            except SyntaxError:
+                continue
                 
         
             
@@ -377,8 +396,8 @@ class MyWindow(QMainWindow,Ui_client):
                     break
                 elif data[0]==cmd.CMD_SONIC:
                     self.Button_Sonic.setText(data[1]+'cm')
-                    self.before_forward_sonic = self.forward_sonic
-                    self.forward_sonic = data[1]
+                    self.before_forward_sonic = int(self.forward_sonic)
+                    self.forward_sonic = int(data[1])
                     if not self.moved and self.forward_sonic != self.before_forward_sonic:
                         self.moved=True
                         self.before_forward_sonic=0
@@ -414,27 +433,76 @@ class MyWindow(QMainWindow,Ui_client):
         print("pointss")
         print(points)
         rotate_deg=points[2]
-        if(rotate_deg == 'T'):
+        print('rotate deg: ' + str(rotate_deg))
+        print(self.before_forward_sonic)
+        print(self.forward_sonic)
+        before_bak = self.before_forward_sonic
+        forward_bak = self.forward_sonic
+        self.before_forward_sonic = int(self.forward_sonic)
+        self.forward_sonic = int(points[3])
+        if not self.moved and self.forward_sonic != self.before_forward_sonic:
+            self.moved=True
+            self.before_forward_sonic=self.forward_sonic
+        if(rotate_deg == 'T'): 
                 self.moved=False
                 self.before_forward_sonic=-2
                 self.forward_sonic=-2
                 return
-        diff=self.forward_sonic-self.before_forward_sonic
+        self.last_measures.append(self.forward_sonic)
+        pass_flag = False
+        if len(self.last_measures) > 10:
+            self.last_measures.pop(0)
+            if statistics.stdev(self.last_measures) < 1.5:
+                pass_flag = True
+        print('abs:')
+        print(abs(self.forward_sonic-self.before_forward_sonic))
+        if abs(self.forward_sonic-self.before_forward_sonic > 3):
+            if not pass_flag:
+                self.before_forward_sonic = before_bak
+                self.forward_sonic = forward_bak
+                return
+
+        diff=self.before_forward_sonic - self.forward_sonic
+
+        self.robot_x += np.cos(np.deg2rad(int(rotate_deg))) * diff
+        self.robot_y += np.sin(np.deg2rad(int(rotate_deg))) * diff
         rotate_deg=int(rotate_deg)
-        x = [point[0] * np.cos(np.deg2rad(point[1])) + np.cos(np.deg2rad(rotate_deg)) * diff for point in points[:2]]
-        y = [point[0] * np.sin(np.deg2rad(point[1])) + np.sin(np.deg2rad(rotate_deg)) * diff for point in points[:2]]
-        x_true = []
-        y_true=[]
+        x = [point[0] * np.cos(np.deg2rad(point[1])) + self.robot_x for point in points[:2]]
+        y = [point[0] * np.sin(np.deg2rad(point[1])) + self.robot_y for point in points[:2]]
+        
         for i in range(len(x)):
             if x[i] < 100 and x[i] > -100 and y[i] < 100 and y[i] > -100:
-                x_true.append(x[i])
-                y_true.append(y[i])
+                self.x_true.append(x[i])
+                self.y_true.append(y[i])
+                self.xy.append([x[i],y[i]])
         
-        self.robot_x += np.cos(np.deg2rad(rotate_deg)) * diff
-        self.robot_y += np.sin(np.deg2rad(rotate_deg)) * diff
+        self.ax.cla()
         # Plot the dots
-        self.ax.scatter(x_true, y_true)
-        self.ax.scatter([self.robot_x], [self.robot_y], marker='*')
+        self.ax.scatter(self.x_true, self.y_true, s=10)
+        self.ax.scatter([self.robot_x], [self.robot_y], marker='*', s=50)
+
+        if len(self.xy) % 10 == 0:
+            clustering = DBSCAN(eps=1.5, min_samples=2).fit(np.array(self.xy))
+            main_x = []
+            main_y = []
+            for i in reversed(range(len(self.xy))):
+                if clustering.labels_[i] == -1:
+                    self.xy.pop(i)
+                else:
+                    main_x.append(self.xy[i][0])
+                    main_y.append(self.xy[i][1])
+            print(main_x)
+            print(clustering)
+            print(clustering.labels_)
+
+
+            self.ax_map.cla()
+            self.ax_map.scatter(main_x, main_y, s=10)
+            self.ax_map.scatter([self.robot_x], [self.robot_y], marker='*', s=50)
+            self.ax_map.set_xlabel('X')
+            self.ax_map.set_ylabel('Y')
+            self.ax_map.set_title('Scatter Plot')
+            self.canvas_map.draw()
 
         # Customize the plot
         self.ax.set_xlabel('X')

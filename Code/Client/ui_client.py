@@ -328,6 +328,10 @@ class Ui_client(object):
         self.Widget_Mapping = QtWidgets.QWidget(client)
         self.Widget_Mapping.setGeometry(QtCore.QRect(855, 30, 450, 450))
         self.Widget_Mapping.setObjectName("Widget_Mapping")
+
+        self.Widget_Main_Mapping = QtWidgets.QWidget(client)
+        self.Widget_Main_Mapping.setGeometry(QtCore.QRect(1300, 30, 450, 450))
+        self.Widget_Main_Mapping.setObjectName("Widget_Main_Mapping")
         self.Button_Sonic = QtWidgets.QPushButton(client)
         self.Button_Sonic.setGeometry(QtCore.QRect(555, 510, 90, 30))
         font = QtGui.QFont()
