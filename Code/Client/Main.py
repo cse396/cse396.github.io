@@ -38,6 +38,8 @@ class MyWindow(QMainWindow,Ui_client):
         self.y_true=[]
         self.xy = []
         self.last_measures=[]
+        self.written_text=[]
+        self.last_rotate=90
 
         self.client=Client()
         self.client.move_speed=str(self.slider_speed.value())
@@ -337,13 +339,12 @@ class MyWindow(QMainWindow,Ui_client):
         self.client.image_process = not self.client.image_process
 
     def save_to_map(self):
+        self.written_text.append((self.robot_x + self.forward_sonic * np.cos(np.deg2rad(int(self.last_rotate))), self.robot_y  * np.sin(np.deg2rad(int(self.last_rotate))), str(self.client.detected_text)))
         
-        self.ax.text(2, 2, str(self.client.detected_text), ha='center', va='bottom')
-        self.canvas.draw()
 
     def receive_mapping(self, ip):
         try:
-            self.client.client_socket2.connect((ip,9001))
+            self.client.client_socket2.connect((ip,9009))
             self.client.tcp_flag=True
             print ("Connecttion Successful !")
         except Exception as e:
@@ -432,14 +433,15 @@ class MyWindow(QMainWindow,Ui_client):
     def refresh_mapping(self, points):
         print("pointss")
         print(points)
-        rotate_deg=points[2]
+        rotate_deg=points[3]
+        self.last_rotate=int(rotate_deg)
         print('rotate deg: ' + str(rotate_deg))
         print(self.before_forward_sonic)
         print(self.forward_sonic)
         before_bak = self.before_forward_sonic
         forward_bak = self.forward_sonic
         self.before_forward_sonic = int(self.forward_sonic)
-        self.forward_sonic = int(points[3])
+        self.forward_sonic = int(points[2][0])
         if not self.moved and self.forward_sonic != self.before_forward_sonic:
             self.moved=True
             self.before_forward_sonic=self.forward_sonic
@@ -480,29 +482,35 @@ class MyWindow(QMainWindow,Ui_client):
         # Plot the dots
         self.ax.scatter(self.x_true, self.y_true, s=10)
         self.ax.scatter([self.robot_x], [self.robot_y], marker='*', s=50)
+        for text_part in self.written_text:
+            self.ax.text(text_part[0],text_part[1], text_part[2], ha='center', va='bottom')
+
 
         if len(self.xy) % 10 == 0:
-            clustering = DBSCAN(eps=1.5, min_samples=2).fit(np.array(self.xy))
-            main_x = []
-            main_y = []
-            for i in reversed(range(len(self.xy))):
-                if clustering.labels_[i] == -1:
-                    self.xy.pop(i)
-                else:
-                    main_x.append(self.xy[i][0])
-                    main_y.append(self.xy[i][1])
-            print(main_x)
-            print(clustering)
-            print(clustering.labels_)
+            try:
+                clustering = DBSCAN(eps=1.5, min_samples=2).fit(np.array(self.xy))
+                main_x = []
+                main_y = []
+                for i in reversed(range(len(self.xy))):
+                    if clustering.labels_[i] == -1:
+                        self.xy.pop(i)
+                    else:
+                        main_x.append(self.xy[i][0])
+                        main_y.append(self.xy[i][1])
+                print(main_x)
+                print(clustering)
+                print(clustering.labels_)
 
 
-            self.ax_map.cla()
-            self.ax_map.scatter(main_x, main_y, s=10)
-            self.ax_map.scatter([self.robot_x], [self.robot_y], marker='*', s=50)
-            self.ax_map.set_xlabel('X')
-            self.ax_map.set_ylabel('Y')
-            self.ax_map.set_title('Scatter Plot')
-            self.canvas_map.draw()
+                self.ax_map.cla()
+                self.ax_map.scatter(main_x, main_y, s=10)
+                self.ax_map.scatter([self.robot_x], [self.robot_y], marker='*', s=50)
+                self.ax_map.set_xlabel('X')
+                self.ax_map.set_ylabel('Y')
+                self.ax_map.set_title('Scatter Plot')
+                self.canvas_map.draw()
+            except ValueError:
+                print('value error')
 
         # Customize the plot
         self.ax.set_xlabel('X')

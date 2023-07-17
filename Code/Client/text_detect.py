@@ -43,6 +43,7 @@ def image_process(image):
         
         # Cropping the text block for giving input to OCR
         cropped = mask3[y:y + h, x:x + w]
+    pytesseract.pytesseract.tesseract_cmd = r'C:\\Program Files\\Tesseract-OCR\\tesseract.exe'
     text.append(pytesseract.image_to_string(Image.fromarray(np.asarray(mask3)), config='--psm 10'))
     return text,cv2.cvtColor(mask3, cv2.COLOR_GRAY2BGR)
 

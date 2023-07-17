@@ -121,14 +121,13 @@ class Client:
                 if self.is_valid_image_4_bytes(jpg):
                     if self.video_flag:
                         self.image = cv2.imdecode(np.frombuffer(jpg, dtype=np.uint8), cv2.IMREAD_COLOR)
+                        self.detected_text=[]
                         if self.text_detect:
                             text,processed_img=text_detect.image_process(self.image)
-                            self.detected_text = text
-                            if self.image_process:
-                                self.image=processed_img
+                            self.detected_text.append(text)
                         if self.object_detect:
-                            text,processed_img=text_detect.object_detect(self.image)
-                            self.detected_text = text
+                            text_object,processed_img=text_detect.object_detect(self.image)
+                            self.detected_text.append(text_object)
                             if self.image_process:
                                 self.image=processed_img
                         if self.ball_flag and self.face_id==False:
